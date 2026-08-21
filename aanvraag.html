@@ -173,6 +173,9 @@
       <label for="demoProduct" data-i18n="demoProduct">Demo product</label>
       <select id="demoProduct" required><option value="" data-i18n="chooseProduct">Choose a product…</option></select>
 
+      <label for="mountType" data-i18n="mountType">Mount / base</label>
+      <select id="mountType" required><option value="" data-i18n="chooseMount">Choose a mount…</option></select>
+
       <label data-i18n="extras">Extras required</label>
       <div class="checks">
         <label class="check-pill" id="pillAir"><input type="checkbox" id="airServerNodig"> <span data-i18n="airserver">AirServer</span></label>
@@ -226,6 +229,7 @@
       shipPostalCity: 'Postal code and city', shipCountry: 'Country',
       shipSpecial: 'Special delivery information', shipSpecialHint: '(e.g. 2nd floor, no lift)',
       sectionProduct: 'Demo product required', demoProduct: 'Demo product', chooseProduct: 'Choose a product…',
+      mountType: 'Mount / base', chooseMount: 'Choose a mount…',
       extras: 'Extras required', airserver: 'AirServer', demoPC: 'Demo PC', navigator: 'Navigator', camera: '4K camera',
       sectionPeriod: 'Period', periodSub: 'Maximum demo period is {weeks} weeks',
       dateArrive: 'Date product must arrive', datePickup: 'Date product must be picked up',
@@ -251,6 +255,7 @@
       shipPostalCity: 'Postcode en plaats', shipCountry: 'Land',
       shipSpecial: 'Bijzonderheden bezorging', shipSpecialHint: '(bv. 2e verdieping, geen lift)',
       sectionProduct: 'Gewenst demo product', demoProduct: 'Demo product', chooseProduct: 'Kies een product…',
+      mountType: 'Onderstel', chooseMount: 'Kies een onderstel…',
       extras: 'Extra benodigdheden', airserver: 'AirServer', demoPC: 'Demo PC', navigator: 'Navigator', camera: '4K camera',
       sectionPeriod: 'Periode', periodSub: 'Maximale demoperiode is {weeks} weken',
       dateArrive: 'Datum aankomst product', datePickup: 'Datum ophalen product',
@@ -276,6 +281,7 @@
       shipPostalCity: 'Postleitzahl und Ort', shipCountry: 'Land',
       shipSpecial: 'Besondere Lieferhinweise', shipSpecialHint: '(z. B. 2. Stock, kein Aufzug)',
       sectionProduct: 'Gewünschtes Demo-Produkt', demoProduct: 'Demo-Produkt', chooseProduct: 'Produkt auswählen…',
+      mountType: 'Gestell / Untergestell', chooseMount: 'Gestell auswählen…',
       extras: 'Zusätzlich benötigt', airserver: 'AirServer', demoPC: 'Demo-PC', navigator: 'Navigator', camera: '4K-Kamera',
       sectionPeriod: 'Zeitraum', periodSub: 'Maximale Demodauer beträgt {weeks} Wochen',
       dateArrive: 'Datum der Anlieferung', datePickup: 'Datum der Abholung',
@@ -301,6 +307,7 @@
       shipPostalCity: 'Code postal et ville', shipCountry: 'Pays',
       shipSpecial: 'Informations de livraison particulières', shipSpecialHint: "(ex. 2e étage, pas d'ascenseur)",
       sectionProduct: 'Produit de démonstration souhaité', demoProduct: 'Produit de démo', chooseProduct: 'Choisir un produit…',
+      mountType: 'Support / socle', chooseMount: 'Choisir un support…',
       extras: 'Accessoires nécessaires', airserver: 'AirServer', demoPC: 'PC de démo', navigator: 'Navigator', camera: 'Caméra 4K',
       sectionPeriod: 'Période', periodSub: 'La durée maximale de démonstration est de {weeks} semaines',
       dateArrive: "Date d'arrivée du produit", datePickup: 'Date de reprise du produit',
@@ -338,6 +345,7 @@
   let MAX_DEMO_DAYS = 21;
   const orgSelect = document.getElementById('organisation');
   const productSelect = document.getElementById('demoProduct');
+  const mountSelect = document.getElementById('mountType');
 
   fetch(APPS_SCRIPT_URL + '?action=getFormOptions')
     .then(r => r.json())
@@ -347,6 +355,7 @@
       document.getElementById('periodSub').textContent = t('periodSub').replace('{weeks}', Math.round(MAX_DEMO_DAYS / 7));
       data.organisations.forEach(o => { const opt = document.createElement('option'); opt.value = o; opt.textContent = o; orgSelect.appendChild(opt); });
       data.demoProducts.forEach(p => { const opt = document.createElement('option'); opt.value = p; opt.textContent = p; productSelect.appendChild(opt); });
+      (data.mountTypes || []).forEach(m => { const opt = document.createElement('option'); opt.value = m; opt.textContent = m; mountSelect.appendChild(opt); });
     })
     .catch(() => { /* options failed to load, form remains usable */ });
 
@@ -413,6 +422,7 @@
       shipCountry: document.getElementById('shipCountry').value.trim(),
       shipSpecialDeliveryInfo: document.getElementById('shipSpecialDeliveryInfo').value.trim(),
       demoProduct: document.getElementById('demoProduct').value,
+      mountType: document.getElementById('mountType').value,
       airServerNodig: document.getElementById('airServerNodig').checked,
       demoPCNodig: document.getElementById('demoPCNodig').checked,
       navigatorNodig: document.getElementById('navigatorNodig').checked,

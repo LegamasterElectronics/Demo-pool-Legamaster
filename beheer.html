@@ -69,6 +69,7 @@
   button.delete:hover { background: var(--err-bg); }
   .detail-actions { display: flex; justify-content: flex-end; align-items: center; }
   .muted { color: var(--muted); font-size: 12.5px; }
+  .transport-notice { background: var(--warn-bg); color: var(--warn); border-radius: 8px; padding: 10px 14px; font-size: 12.5px; margin-bottom: 14px; line-height: 1.5; }
   .toast { position: fixed; bottom: 20px; right: 20px; background: var(--navy); color: #fff; padding: 10px 16px; border-radius: 8px; font-size: 13px; display: none; }
 </style>
 </head>
@@ -261,6 +262,19 @@
     });
   }
 
+  const TRANSPORT_NOTES = {
+    'Legamaster Netherlands': ['Zelf uitrijden (goedkoper).'],
+    'Legamaster Germany': ['Meestal zelf uitrijden.', 'Transportkosten altijd bij LMGmbH plaatsen — doorgeven aan Logistiek.'],
+    'Legamaster France': ['Overweeg knockdown-verzending (scherm in box, onderstel los op pallet) — in overleg met sales.'],
+    'Legamaster Nordics': ['Overweeg knockdown-verzending (scherm in box, onderstel los op pallet) — in overleg met sales.']
+  };
+
+  function transportNoticeHtml(organisation) {
+    const notes = TRANSPORT_NOTES[organisation];
+    if (!notes || !notes.length) return '';
+    return '<div class="transport-notice">' + notes.map(n => '<div>' + esc(n) + '</div>').join('') + '</div>';
+  }
+
   function requestDetailHtml(req) {
     const id = req.requestID;
     function field(label, value) {
@@ -290,6 +304,12 @@
       '<div class="detail-section-title full">Opmerkingen sales</div>' +
       '<div class="detail-grid"><div class="detail-field full">' + field('', req.remarks) + '</div></div>' +
 
+      '<div class="detail-section-title">Gewenst demo product</div>' +
+      '<div class="detail-grid">' +
+        field('Demo product', req.demoProduct) +
+        field('Onderstel', req.mountType) +
+      '</div>' +
+
       '<div class="detail-section-title">Beheer — Bram / Tom</div>' +
       '<div class="detail-grid">' +
         '<div class="detail-field"><label>Status</label>' + selectHtml('st-' + id, REQUEST_STATUSSEN, req.status) + '</div>' +
@@ -298,6 +318,7 @@
       '</div>' +
 
       '<div class="detail-section-title">Transport <span class="muted" style="text-transform:none;font-weight:400;">— alleen invullen bij transport door derden</span></div>' +
+      transportNoticeHtml(req.organisation) +
       '<div class="detail-grid">' +
         '<div class="detail-field"><label>Aantal colli/pallets</label><input type="text" id="tc-' + id + '" value="' + esc(req.transportColli) + '"></div>' +
         '<div class="detail-field"><label>Omschrijving 1 (afmeting/gewicht)</label><input type="text" id="td1-' + id + '" value="' + esc(req.transportDesc1) + '"></div>' +
