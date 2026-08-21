@@ -4,32 +4,38 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Demo pool beheer — Legamaster</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
 <style>
   :root {
-    --navy: #0d2b45; --accent: #ff6a1a; --paper: #f6f7f9; --line: #d9dee3;
+    --navy: #00368e; --accent: #f39325; --accent-dark: #d97e14; --cyan: #19b0e4;
+    --paper: #f6f7f9; --line: #d9dee3;
     --text: #1c2530; --muted: #64748b; --ok: #1a7a45; --ok-bg: #e8f6ee;
     --warn: #9a6a00; --warn-bg: #fff4d9; --err: #b3261e; --err-bg: #fdecea; --grey-bg: #eef0f3;
   }
   * { box-sizing: border-box; }
-  body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--paper); color: var(--text); font-size: 14px; }
+  body { margin: 0; font-family: 'Roboto', -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; background: var(--paper); color: var(--text); font-size: 14px; }
   #gate { height: 100vh; display: flex; align-items: center; justify-content: center; background: var(--navy); }
   #gate .box { background: #fff; padding: 32px; border-radius: 12px; width: 320px; text-align: center; }
+  #gate img.logo { height: 24px; margin-bottom: 18px; }
   #gate h1 { font-size: 17px; margin: 0 0 4px; }
   #gate p { color: var(--muted); font-size: 13px; margin: 0 0 18px; }
-  #gate input { width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; font-size: 15px; margin-bottom: 12px; }
-  #gate button { width: 100%; padding: 11px; border: none; border-radius: 8px; background: var(--accent); color: #fff; font-weight: 650; font-size: 15px; cursor: pointer; }
+  #gate input { width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; font-size: 15px; margin-bottom: 12px; font-family: inherit; }
+  #gate button { width: 100%; padding: 11px; border: none; border-radius: 8px; background: var(--accent); color: #fff; font-weight: 700; font-size: 15px; cursor: pointer; font-family: inherit; }
   #gate .err { color: var(--err); font-size: 12.5px; margin-top: 8px; min-height: 16px; }
   #app { display: none; }
-  .topbar { background: var(--navy); color: #fff; padding: 16px 24px; }
-  .topbar h1 { font-size: 17px; margin: 0; font-weight: 650; }
-  .topbar .eyebrow { font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: #9fb4c7; margin: 0; }
+  .topbar { background: var(--navy); color: #fff; padding: 14px 24px; display: flex; align-items: center; gap: 14px; }
+  .topbar img.logo { height: 22px; }
+  .topbar .divider { width: 1px; height: 22px; background: rgba(255,255,255,0.3); }
+  .topbar h1 { font-size: 15px; margin: 0; font-weight: 500; color: #cfe0f5; }
   .tabs { display: flex; gap: 4px; padding: 0 24px; background: #fff; border-bottom: 1px solid var(--line); }
   .tab { padding: 12px 16px; cursor: pointer; font-weight: 600; color: var(--muted); border-bottom: 2px solid transparent; font-size: 13.5px; }
   .tab.active { color: var(--navy); border-bottom-color: var(--accent); }
   .content { padding: 20px 24px 60px; max-width: 1400px; margin: 0 auto; }
   .toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; gap: 10px; flex-wrap: wrap; }
   .toolbar .count { color: var(--muted); font-size: 13px; }
-  button.refresh { background: #fff; border: 1px solid var(--line); border-radius: 7px; padding: 7px 12px; cursor: pointer; font-size: 13px; font-weight: 600; }
+  button.refresh { background: #fff; border: 1px solid var(--line); border-radius: 7px; padding: 7px 12px; cursor: pointer; font-size: 13px; font-weight: 600; font-family: inherit; }
   table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 10px; overflow: hidden; }
   th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
   th { background: var(--grey-bg); font-size: 11px; text-transform: uppercase; letter-spacing: 0.03em; color: var(--muted); font-weight: 650; }
@@ -44,7 +50,7 @@
   .status-badge.afgerond { background: var(--grey-bg); color: var(--muted); }
   .status-badge.geannuleerd { background: var(--err-bg); color: var(--err); }
   .status-badge { display: inline-block; padding: 3px 9px; border-radius: 999px; font-size: 11.5px; font-weight: 650; }
-  button.toggle-details { background: none; border: 1px solid var(--line); border-radius: 6px; padding: 5px 10px; font-size: 12px; cursor: pointer; color: var(--navy); font-weight: 600; }
+  button.toggle-details { background: none; border: 1px solid var(--line); border-radius: 6px; padding: 5px 10px; font-size: 12px; cursor: pointer; color: var(--navy); font-weight: 600; font-family: inherit; }
   .detail-row { display: none; }
   .detail-row td { background: #fbfbfc; padding: 18px 20px; }
   .detail-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px 20px; margin-bottom: 18px; }
@@ -54,8 +60,11 @@
   .detail-section-title { font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); font-weight: 700; margin: 4px 0 10px; border-top: 1px solid var(--line); padding-top: 14px; }
   .detail-section-title:first-child { border-top: none; padding-top: 0; }
   .save-cell { text-align: right; white-space: nowrap; }
-  button.save { background: var(--navy); color: #fff; border: none; border-radius: 6px; padding: 7px 14px; font-size: 12.5px; font-weight: 650; cursor: pointer; }
+  button.save { background: var(--navy); color: #fff; border: none; border-radius: 6px; padding: 7px 14px; font-size: 12.5px; font-weight: 650; cursor: pointer; font-family: inherit; }
   button.save:disabled { background: #c9ccd1; cursor: default; }
+  button.delete { background: #fff; color: var(--err); border: 1px solid var(--err); border-radius: 6px; padding: 7px 14px; font-size: 12.5px; font-weight: 650; cursor: pointer; font-family: inherit; margin-right: 8px; }
+  button.delete:hover { background: var(--err-bg); }
+  .detail-actions { display: flex; justify-content: flex-end; align-items: center; }
   .muted { color: var(--muted); font-size: 12.5px; }
   .toast { position: fixed; bottom: 20px; right: 20px; background: var(--navy); color: #fff; padding: 10px 16px; border-radius: 8px; font-size: 13px; display: none; }
 </style>
@@ -64,6 +73,7 @@
 
 <div id="gate">
   <div class="box">
+    <img class="logo" src="legamaster-logo.png" alt="Legamaster">
     <h1>Demo pool beheer</h1>
     <p>Alleen voor Bram en Tom</p>
     <input type="password" id="pwInput" placeholder="Wachtwoord">
@@ -74,7 +84,8 @@
 
 <div id="app">
   <div class="topbar">
-    <p class="eyebrow">Legamaster</p>
+    <img class="logo" src="legamaster-logo-white-full.png" alt="Legamaster">
+    <div class="divider"></div>
     <h1>Demo pool beheer</h1>
   </div>
 
@@ -242,6 +253,9 @@
     tbody.querySelectorAll('button.save-request').forEach(btn => {
       btn.addEventListener('click', () => saveRequest(btn.dataset.id, btn));
     });
+    tbody.querySelectorAll('button.delete-request').forEach(btn => {
+      btn.addEventListener('click', () => deleteRequestConfirm(btn.dataset.id, btn));
+    });
   }
 
   function requestDetailHtml(req) {
@@ -299,7 +313,23 @@
         '<div class="detail-field"><label>Land</label><input type="text" id="lco-' + id + '" value="' + esc(req.loadingCountry) + '"></div>' +
       '</div>' +
 
-      '<div style="text-align:right;"><button class="save save-request" data-id="' + id + '">Wijzigingen opslaan</button></div>';
+      '<div class="detail-actions"><button class="delete delete-request" data-id="' + id + '">Aanvraag verwijderen</button><button class="save save-request" data-id="' + id + '">Wijzigingen opslaan</button></div>';
+  }
+
+  function deleteRequestConfirm(id, btn) {
+    if (!confirm('Aanvraag ' + id + ' definitief verwijderen? Dit kan niet ongedaan gemaakt worden.')) return;
+    btn.disabled = true; btn.textContent = 'Verwijderen…';
+    fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: 'deleteRequest', password: PASSWORD, requestId: id })
+    })
+      .then(r => r.json())
+      .then(data => {
+        if (data.ok) { toast('Aanvraag verwijderd'); loadRequests(); }
+        else { toast('Mislukt: ' + data.error); btn.disabled = false; btn.textContent = 'Aanvraag verwijderen'; }
+      })
+      .catch(() => { toast('Mislukt: kan niet verbinden'); btn.disabled = false; btn.textContent = 'Aanvraag verwijderen'; });
   }
 
   function saveRequest(id, btn) {

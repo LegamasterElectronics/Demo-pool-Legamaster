@@ -4,11 +4,15 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Request a demo — Legamaster</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
 <style>
   :root {
-    --navy: #0d2b45;
-    --accent: #ff6a1a;
-    --accent-dark: #e05a10;
+    --lm-blue: #00368e;
+    --lm-cyan: #19b0e4;
+    --lm-orange: #f39325;
+    --lm-orange-dark: #d97e14;
     --paper: #f6f7f9;
     --line: #d9dee3;
     --text: #1c2530;
@@ -22,61 +26,51 @@
     --radius: 10px;
   }
   * { box-sizing: border-box; }
-  body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--paper); color: var(--text); }
-  .topbar { background: var(--navy); color: #fff; padding: 22px 20px; }
-  .topbar-inner { max-width: 640px; margin: 0 auto; display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
-  .topbar .eyebrow { font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: #9fb4c7; margin: 0 0 6px; }
-  .topbar h1 { margin: 0; font-size: 22px; font-weight: 650; }
-  .lang-switch { display: flex; gap: 4px; flex-shrink: 0; margin-top: 2px; }
-  .lang-switch button { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.2); color: #cdd9e3; padding: 5px 10px; border-radius: 6px; font-size: 12px; font-weight: 650; cursor: pointer; }
-  .lang-switch button.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+  body { margin: 0; font-family: 'Roboto', -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; background: var(--paper); color: var(--text); }
+  .topbar { background: var(--lm-blue); color: #fff; padding: 18px 20px; }
+  .topbar-inner { max-width: 640px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+  .topbar-brand { display: flex; align-items: center; gap: 14px; }
+  .topbar-brand img { height: 26px; width: auto; display: block; }
+  .topbar-brand .divider { width: 1px; height: 26px; background: rgba(255,255,255,0.3); }
+  .topbar h1 { margin: 0; font-size: 17px; font-weight: 500; color: #cfe0f5; }
+  .lang-switch { display: flex; gap: 4px; flex-shrink: 0; }
+  .lang-switch button { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.25); color: #dbe6f4; padding: 5px 10px; border-radius: 6px; font-size: 12px; font-weight: 500; cursor: pointer; font-family: inherit; }
+  .lang-switch button.active { background: var(--lm-orange); border-color: var(--lm-orange); color: #fff; }
   .wrap { max-width: 640px; margin: 0 auto; padding: 28px 20px 60px; }
   .card { background: #fff; border: 1px solid var(--line); border-radius: var(--radius); padding: 24px; margin-bottom: 18px; }
-  .card h2 { font-size: 14px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin: 0 0 4px; font-weight: 650; }
+  .card h2 { font-size: 14px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--lm-blue); margin: 0 0 4px; font-weight: 700; }
   .card .sub { font-size: 12.5px; color: var(--muted); margin: 0 0 16px; }
-  label { display: block; font-size: 13.5px; font-weight: 600; margin: 14px 0 6px; }
+  label { display: block; font-size: 13.5px; font-weight: 500; margin: 14px 0 6px; }
   label:first-of-type { margin-top: 0; }
   .hint { font-weight: 400; color: var(--muted); }
   input[type=text], input[type=number], input[type=date], select, textarea {
     width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px;
     font-size: 15px; font-family: inherit; background: #fff; color: var(--text);
   }
-  input:focus, select:focus, textarea:focus { outline: 2px solid var(--accent); outline-offset: 1px; border-color: var(--accent); }
+  input:focus, select:focus, textarea:focus { outline: 2px solid var(--lm-cyan); outline-offset: 1px; border-color: var(--lm-cyan); }
   textarea { min-height: 70px; resize: vertical; }
   .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
   .checks { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 4px; }
   .check-pill { display: flex; align-items: center; gap: 8px; border: 1px solid var(--line); border-radius: 999px; padding: 8px 14px; font-size: 14px; cursor: pointer; user-select: none; background: #fff; }
-  .check-pill input { accent-color: var(--accent); }
-  .check-pill.active { border-color: var(--accent); background: #fff3ec; }
+  .check-pill input[type=checkbox] { accent-color: var(--lm-orange); width: 16px; height: 16px; margin: 0; flex-shrink: 0; }
+  .check-pill.active { border-color: var(--lm-orange); background: #fef3e8; }
   .period-warning { display: none; margin-top: 10px; padding: 10px 12px; border-radius: 8px; background: var(--warn-bg); color: var(--warn-text); font-size: 13px; }
-  .avail-toggle { width: 100%; display: flex; align-items: center; justify-content: space-between; background: #fff; border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 18px; cursor: pointer; font-size: 14px; font-weight: 650; color: var(--navy); margin-bottom: 18px; }
-  .avail-toggle .arrow { transition: transform 0.15s; color: var(--muted); font-weight: 400; }
-  .avail-toggle.open .arrow { transform: rotate(180deg); }
-  .avail-panel { display: none; margin: -10px 0 18px; }
-  .avail-panel table { width: 100%; border-collapse: collapse; background: #fff; border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; font-size: 13px; }
-  .avail-panel th, .avail-panel td { text-align: left; padding: 8px 12px; border-bottom: 1px solid var(--line); }
-  .avail-panel th { background: #eef0f3; font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); font-weight: 650; }
-  .avail-panel tr:last-child td { border-bottom: none; }
-  .avail-status { display: inline-block; padding: 3px 9px; border-radius: 999px; font-size: 11px; font-weight: 650; }
-  .avail-status.beschikbaar { background: var(--ok-bg); color: var(--ok-text); }
-  .avail-status.uitgeleend, .avail-status.onderweg { background: var(--warn-bg); color: var(--warn-text); }
-  .avail-status.in.onderhoud { background: var(--err-bg); color: var(--err-text); }
-  .avail-loading { padding: 16px; text-align: center; color: var(--muted); font-size: 13px; }
-  button.submit { width: 100%; background: var(--accent); color: #fff; border: none; padding: 14px; border-radius: 8px; font-size: 16px; font-weight: 650; cursor: pointer; margin-top: 4px; }
-  button.submit:hover { background: var(--accent-dark); }
+  button.submit { width: 100%; background: var(--lm-orange); color: #fff; border: none; padding: 14px; border-radius: 8px; font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 4px; font-family: inherit; }
+  button.submit:hover { background: var(--lm-orange-dark); }
   button.submit:disabled { background: #c9ccd1; cursor: not-allowed; }
   .msg { border-radius: 8px; padding: 12px 14px; font-size: 14px; margin-bottom: 18px; display: none; }
   .msg.ok { display: block; background: var(--ok-bg); color: var(--ok-text); }
   .msg.err { display: block; background: var(--err-bg); color: var(--err-text); }
-  @media (max-width: 480px) { .row2 { grid-template-columns: 1fr; } .topbar-inner { flex-direction: column; } }
+  @media (max-width: 480px) { .row2 { grid-template-columns: 1fr; } .topbar-brand .divider { display: none; } .topbar h1 { display: none; } }
 </style>
 </head>
 <body>
 
 <div class="topbar">
   <div class="topbar-inner">
-    <div>
-      <p class="eyebrow">Legamaster · Demo pool</p>
+    <div class="topbar-brand">
+      <img src="legamaster-logo-white-full.png" alt="Legamaster">
+      <div class="divider"></div>
       <h1 data-i18n="title">Request a demo screen</h1>
     </div>
     <div class="lang-switch" id="langSwitch">
@@ -90,25 +84,6 @@
 
 <div class="wrap">
   <div id="msg" class="msg"></div>
-
-  <button type="button" class="avail-toggle" id="availToggle">
-    <span data-i18n="availToggle">View demo screen availability</span>
-    <span class="arrow">▾</span>
-  </button>
-  <div class="avail-panel" id="availPanel">
-    <div class="avail-loading" id="availLoading" data-i18n="availLoading">Loading…</div>
-    <table id="availTable" style="display:none;">
-      <thead>
-        <tr>
-          <th data-i18n="availModel">Model</th>
-          <th data-i18n="availStatus">Status</th>
-          <th data-i18n="availLocation">Location</th>
-          <th data-i18n="availReturn">Expected back</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-  </div>
 
   <form id="requestForm">
     <div class="card">
@@ -334,7 +309,6 @@
     });
     document.getElementById('periodSub').textContent = t('periodSub').replace('{weeks}', Math.round(MAX_DEMO_DAYS / 7));
     document.querySelectorAll('.lang-switch button').forEach(b => b.classList.toggle('active', b.dataset.lang === LANG));
-    if (availLoaded) renderAvailability(LAST_AVAILABILITY);
     sessionStorage.setItem('demopool_lang', LANG);
   }
 
@@ -359,54 +333,7 @@
     })
     .catch(() => { /* options failed to load, form remains usable */ });
 
-  // ---------- Availability ----------
-  const availToggle = document.getElementById('availToggle');
-  const availPanel = document.getElementById('availPanel');
-  let availLoaded = false;
-  let LAST_AVAILABILITY = [];
-
-  availToggle.addEventListener('click', () => {
-    const open = availPanel.style.display === 'block';
-    availPanel.style.display = open ? 'none' : 'block';
-    availToggle.classList.toggle('open', !open);
-    if (!open && !availLoaded) loadAvailability();
-  });
-
-  function loadAvailability() {
-    fetch(APPS_SCRIPT_URL + '?action=getAvailability')
-      .then(r => r.json())
-      .then(data => {
-        const loading = document.getElementById('availLoading');
-        if (!data.ok || !data.screens.length) {
-          loading.textContent = data.ok ? t('availEmpty') : t('availError');
-          return;
-        }
-        availLoaded = true;
-        LAST_AVAILABILITY = data.screens;
-        renderAvailability(data.screens);
-      })
-      .catch(() => { document.getElementById('availLoading').textContent = t('availError'); });
-  }
-
-  function renderAvailability(screens) {
-    const loading = document.getElementById('availLoading');
-    const table = document.getElementById('availTable');
-    const sorted = screens.slice().sort((a, b) => (a.model || '').localeCompare(b.model || ''));
-    const tbody = table.querySelector('tbody');
-    tbody.innerHTML = sorted.map(s => {
-      const rawStatus = s.status || '';
-      const statusClass = rawStatus.replace(/\s+/g, '.');
-      const statusLabel = t('statusMap')[rawStatus] || rawStatus || '—';
-      return '<tr>' +
-        '<td>' + (s.model || '—') + '</td>' +
-        '<td><span class="avail-status ' + statusClass + '">' + statusLabel + '</span></td>' +
-        '<td>' + (rawStatus === 'beschikbaar' ? '—' : (s.locatie || '—')) + '</td>' +
-        '<td>' + (rawStatus === 'beschikbaar' ? '—' : (s.verwachteTerugkomst || '—')) + '</td>' +
-        '</tr>';
-    }).join('');
-    loading.style.display = 'none';
-    table.style.display = 'table';
-  }
+  // ---------- Availability panel removed: sales submits via form, Bram prepares a screen ----------
 
   ['pillAir', 'pillPC', 'pillNav', 'pillCam'].forEach(id => {
     const pill = document.getElementById(id);
