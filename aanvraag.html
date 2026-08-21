@@ -30,9 +30,9 @@
   .topbar { background: var(--lm-blue); color: #fff; padding: 18px 20px; }
   .topbar-inner { max-width: 640px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
   .topbar-brand { display: flex; align-items: center; gap: 14px; }
-  .topbar-brand img { height: 26px; width: auto; display: block; }
-  .topbar-brand .divider { width: 1px; height: 26px; background: rgba(255,255,255,0.3); }
-  .topbar h1 { margin: 0; font-size: 17px; font-weight: 500; color: #cfe0f5; }
+  .topbar-brand .brand-name { font-weight: 700; font-size: 17px; }
+  .topbar-brand .divider { width: 1px; height: 20px; background: rgba(255,255,255,0.35); }
+  .topbar h1 { margin: 0; font-size: 17px; font-weight: 400; color: #dbe6f4; }
   .lang-switch { display: flex; gap: 4px; flex-shrink: 0; }
   .lang-switch button { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.25); color: #dbe6f4; padding: 5px 10px; border-radius: 6px; font-size: 12px; font-weight: 500; cursor: pointer; font-family: inherit; }
   .lang-switch button.active { background: var(--lm-orange); border-color: var(--lm-orange); color: #fff; }
@@ -52,8 +52,22 @@
   .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
   .checks { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 4px; }
   .check-pill { display: flex; align-items: center; gap: 8px; border: 1px solid var(--line); border-radius: 999px; padding: 8px 14px; font-size: 14px; cursor: pointer; user-select: none; background: #fff; }
-  .check-pill input[type=checkbox] { accent-color: var(--lm-orange); width: 16px; height: 16px; margin: 0; flex-shrink: 0; }
+  .check-pill input[type=checkbox] {
+    appearance: none; -webkit-appearance: none; -moz-appearance: none;
+    width: 16px; height: 16px; margin: 0; padding: 0; flex-shrink: 0;
+    border: 1.5px solid #b9c0c9; border-radius: 4px; background: #fff;
+    cursor: pointer; position: relative; display: inline-block;
+  }
+  .check-pill input[type=checkbox]:checked {
+    background: var(--lm-orange); border-color: var(--lm-orange);
+  }
+  .check-pill input[type=checkbox]:checked::after {
+    content: ''; position: absolute; left: 4px; top: 0px;
+    width: 5px; height: 9px; border: solid #fff; border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+  }
   .check-pill.active { border-color: var(--lm-orange); background: #fef3e8; }
+  .checks label.check-pill { margin: 0; line-height: 1.2; }
   .period-warning { display: none; margin-top: 10px; padding: 10px 12px; border-radius: 8px; background: var(--warn-bg); color: var(--warn-text); font-size: 13px; }
   button.submit { width: 100%; background: var(--lm-orange); color: #fff; border: none; padding: 14px; border-radius: 8px; font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 4px; font-family: inherit; }
   button.submit:hover { background: var(--lm-orange-dark); }
@@ -61,7 +75,7 @@
   .msg { border-radius: 8px; padding: 12px 14px; font-size: 14px; margin-bottom: 18px; display: none; }
   .msg.ok { display: block; background: var(--ok-bg); color: var(--ok-text); }
   .msg.err { display: block; background: var(--err-bg); color: var(--err-text); }
-  @media (max-width: 480px) { .row2 { grid-template-columns: 1fr; } .topbar-brand .divider { display: none; } .topbar h1 { display: none; } }
+  @media (max-width: 480px) { .row2 { grid-template-columns: 1fr; } .topbar-inner { flex-wrap: wrap; } .lang-switch { order: 3; width: 100%; justify-content: flex-start; } }
 </style>
 </head>
 <body>
@@ -69,7 +83,7 @@
 <div class="topbar">
   <div class="topbar-inner">
     <div class="topbar-brand">
-      <img src="legamaster-logo-white-full.png" alt="Legamaster">
+      <span class="brand-name">Legamaster</span>
       <div class="divider"></div>
       <h1 data-i18n="title">Request a demo screen</h1>
     </div>
