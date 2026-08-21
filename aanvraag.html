@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Request a demo — Legamaster</title>
+<style>
+  :root {
+    --navy: #0d2b45;
+    --accent: #ff6a1a;
+    --accent-dark: #e05a10;
+    --paper: #f6f7f9;
+    --line: #d9dee3;
+    --text: #1c2530;
+    --muted: #64748b;
+    --ok-bg: #e8f6ee;
+    --ok-text: #1a7a45;
+    --err-bg: #fdecea;
+    --err-text: #b3261e;
+    --warn-bg: #fff4d9;
+    --warn-text: #9a6a00;
+    --radius: 10px;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--paper); color: var(--text); }
+  .topbar { background: var(--navy); color: #fff; padding: 22px 20px; }
+  .topbar-inner { max-width: 640px; margin: 0 auto; display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
+  .topbar .eyebrow { font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: #9fb4c7; margin: 0 0 6px; }
+  .topbar h1 { margin: 0; font-size: 22px; font-weight: 650; }
+  .lang-switch { display: flex; gap: 4px; flex-shrink: 0; margin-top: 2px; }
+  .lang-switch button { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.2); color: #cdd9e3; padding: 5px 10px; border-radius: 6px; font-size: 12px; font-weight: 650; cursor: pointer; }
+  .lang-switch button.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .wrap { max-width: 640px; margin: 0 auto; padding: 28px 20px 60px; }
+  .card { background: #fff; border: 1px solid var(--line); border-radius: var(--radius); padding: 24px; margin-bottom: 18px; }
+  .card h2 { font-size: 14px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin: 0 0 4px; font-weight: 650; }
+  .card .sub { font-size: 12.5px; color: var(--muted); margin: 0 0 16px; }
+  label { display: block; font-size: 13.5px; font-weight: 600; margin: 14px 0 6px; }
+  label:first-of-type { margin-top: 0; }
+  .hint { font-weight: 400; color: var(--muted); }
+  input[type=text], input[type=number], input[type=date], select, textarea {
+    width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px;
+    font-size: 15px; font-family: inherit; background: #fff; color: var(--text);
+  }
+  input:focus, select:focus, textarea:focus { outline: 2px solid var(--accent); outline-offset: 1px; border-color: var(--accent); }
+  textarea { min-height: 70px; resize: vertical; }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .checks { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 4px; }
+  .check-pill { display: flex; align-items: center; gap: 8px; border: 1px solid var(--line); border-radius: 999px; padding: 8px 14px; font-size: 14px; cursor: pointer; user-select: none; background: #fff; }
+  .check-pill input { accent-color: var(--accent); }
+  .check-pill.active { border-color: var(--accent); background: #fff3ec; }
+  .period-warning { display: none; margin-top: 10px; padding: 10px 12px; border-radius: 8px; background: var(--warn-bg); color: var(--warn-text); font-size: 13px; }
+  .avail-toggle { width: 100%; display: flex; align-items: center; justify-content: space-between; background: #fff; border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 18px; cursor: pointer; font-size: 14px; font-weight: 650; color: var(--navy); margin-bottom: 18px; }
+  .avail-toggle .arrow { transition: transform 0.15s; color: var(--muted); font-weight: 400; }
+  .avail-toggle.open .arrow { transform: rotate(180deg); }
+  .avail-panel { display: none; margin: -10px 0 18px; }
+  .avail-panel table { width: 100%; border-collapse: collapse; background: #fff; border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; font-size: 13px; }
+  .avail-panel th, .avail-panel td { text-align: left; padding: 8px 12px; border-bottom: 1px solid var(--line); }
+  .avail-panel th { background: #eef0f3; font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); font-weight: 650; }
+  .avail-panel tr:last-child td { border-bottom: none; }
+  .avail-status { display: inline-block; padding: 3px 9px; border-radius: 999px; font-size: 11px; font-weight: 650; }
+  .avail-status.beschikbaar { background: var(--ok-bg); color: var(--ok-text); }
+  .avail-status.uitgeleend, .avail-status.onderweg { background: var(--warn-bg); color: var(--warn-text); }
+  .avail-status.in.onderhoud { background: var(--err-bg); color: var(--err-text); }
+  .avail-loading { padding: 16px; text-align: center; color: var(--muted); font-size: 13px; }
+  button.submit { width: 100%; background: var(--accent); color: #fff; border: none; padding: 14px; border-radius: 8px; font-size: 16px; font-weight: 650; cursor: pointer; margin-top: 4px; }
+  button.submit:hover { background: var(--accent-dark); }
+  button.submit:disabled { background: #c9ccd1; cursor: not-allowed; }
+  .msg { border-radius: 8px; padding: 12px 14px; font-size: 14px; margin-bottom: 18px; display: none; }
+  .msg.ok { display: block; background: var(--ok-bg); color: var(--ok-text); }
+  .msg.err { display: block; background: var(--err-bg); color: var(--err-text); }
+  @media (max-width: 480px) { .row2 { grid-template-columns: 1fr; } .topbar-inner { flex-direction: column; } }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <div>
+      <p class="eyebrow">Legamaster · Demo pool</p>
+      <h1 data-i18n="title">Request a demo screen</h1>
+    </div>
+    <div class="lang-switch" id="langSwitch">
+      <button type="button" data-lang="en">EN</button>
+      <button type="button" data-lang="nl">NL</button>
+      <button type="button" data-lang="de">DE</button>
+      <button type="button" data-lang="fr">FR</button>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <div id="msg" class="msg"></div>
+
+  <button type="button" class="avail-toggle" id="availToggle">
+    <span data-i18n="availToggle">View demo screen availability</span>
+    <span class="arrow">▾</span>
+  </button>
+  <div class="avail-panel" id="availPanel">
+    <div class="avail-loading" id="availLoading" data-i18n="availLoading">Loading…</div>
+    <table id="availTable" style="display:none;">
+      <thead>
+        <tr>
+          <th data-i18n="availModel">Model</th>
+          <th data-i18n="availStatus">Status</th>
+          <th data-i18n="availLocation">Location</th>
+          <th data-i18n="availReturn">Expected back</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <form id="requestForm">
+    <div class="card">
+      <h2 data-i18n="sectionRequester">Requester</h2>
+      <label for="organisation" data-i18n="organisation">Organisation</label>
+      <select id="organisation" required><option value="" data-i18n="chooseOption">Choose…</option></select>
+
+      <div class="row2">
+        <div>
+          <label for="requestBy" data-i18n="requestBy">Request by (your name)</label>
+          <input type="text" id="requestBy" required>
+        </div>
+        <div>
+          <label for="responsibleSalesTeamMember" data-i18n="responsibleSales">Responsible sales team member</label>
+          <input type="text" id="responsibleSalesTeamMember" required>
+        </div>
+      </div>
+
+      <div class="row2">
+        <div>
+          <label for="legamasterReseller" data-i18n="reseller">Legamaster reseller</label>
+          <input type="text" id="legamasterReseller">
+        </div>
+        <div>
+          <label for="salesPotentialUnits" data-i18n="salesPotential">Sales potential (units)</label>
+          <input type="number" id="salesPotentialUnits" min="0">
+        </div>
+      </div>
+
+      <label for="reasonForDemo"><span data-i18n="reasonForDemo">Reason for demo</span> <span class="hint" data-i18n="reasonHint">(e.g. tender, new dealer)</span></label>
+      <input type="text" id="reasonForDemo">
+    </div>
+
+    <div class="card">
+      <h2 data-i18n="sectionShip">Ship to address</h2>
+      <label for="shipCompanyName" data-i18n="shipCompany">Company name</label>
+      <input type="text" id="shipCompanyName" required>
+
+      <div class="row2">
+        <div>
+          <label for="shipContactPerson" data-i18n="shipContact">Contact person</label>
+          <input type="text" id="shipContactPerson" required>
+        </div>
+        <div>
+          <label for="shipPhone" data-i18n="shipPhone">(Mobile) phone number</label>
+          <input type="text" id="shipPhone" required>
+        </div>
+      </div>
+
+      <label for="shipStreet" data-i18n="shipStreet">Street and number</label>
+      <input type="text" id="shipStreet" required>
+
+      <div class="row2">
+        <div>
+          <label for="shipPostalCity" data-i18n="shipPostalCity">Postal code and city</label>
+          <input type="text" id="shipPostalCity" required>
+        </div>
+        <div>
+          <label for="shipCountry" data-i18n="shipCountry">Country</label>
+          <input type="text" id="shipCountry" required>
+        </div>
+      </div>
+
+      <label for="shipSpecialDeliveryInfo"><span data-i18n="shipSpecial">Special delivery information</span> <span class="hint" data-i18n="shipSpecialHint">(e.g. 2nd floor, no lift)</span></label>
+      <input type="text" id="shipSpecialDeliveryInfo">
+    </div>
+
+    <div class="card">
+      <h2 data-i18n="sectionProduct">Demo product required</h2>
+      <label for="demoProduct" data-i18n="demoProduct">Demo product</label>
+      <select id="demoProduct" required><option value="" data-i18n="chooseProduct">Choose a product…</option></select>
+
+      <label data-i18n="extras">Extras required</label>
+      <div class="checks">
+        <label class="check-pill" id="pillAir"><input type="checkbox" id="airServerNodig"> <span data-i18n="airserver">AirServer</span></label>
+        <label class="check-pill" id="pillPC"><input type="checkbox" id="demoPCNodig"> <span data-i18n="demoPC">Demo PC</span></label>
+        <label class="check-pill" id="pillNav"><input type="checkbox" id="navigatorNodig"> <span data-i18n="navigator">Navigator</span></label>
+        <label class="check-pill" id="pillCam"><input type="checkbox" id="cameraNodig"> <span data-i18n="camera">4K camera</span></label>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2 data-i18n="sectionPeriod">Period</h2>
+      <p class="sub" id="periodSub" data-i18n="periodSub">Maximum demo period is three weeks</p>
+      <div class="row2">
+        <div>
+          <label for="dateArrive" data-i18n="dateArrive">Date product must arrive</label>
+          <input type="date" id="dateArrive" required>
+        </div>
+        <div>
+          <label for="datePickup" data-i18n="datePickup">Date product must be picked up</label>
+          <input type="date" id="datePickup" required>
+        </div>
+      </div>
+      <div class="period-warning" id="periodWarning"></div>
+
+      <label for="remarks" data-i18n="remarks">Remarks</label>
+      <textarea id="remarks"></textarea>
+    </div>
+
+    <button type="submit" class="submit" id="submitBtn" data-i18n="submit">Submit request</button>
+  </form>
+</div>
+
+<script>
+  // Fill this in after deploying the Apps Script Web App:
+  const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzXbK2-839wMopT_WS5cWqrvy_4FBqyKjG7mmVDh-JYSmF5IQEqcvG1MVmuSgiYLoo8/exec';
+
+  // ---------- Translations ----------
+  const I18N = {
+    en: {
+      title: 'Request a demo screen',
+      availToggle: 'View demo screen availability', availLoading: 'Loading…',
+      availEmpty: 'No screens known yet.', availError: 'Could not load availability.',
+      availModel: 'Model', availStatus: 'Status', availLocation: 'Location', availReturn: 'Expected back',
+      statusMap: { 'beschikbaar': 'Available', 'uitgeleend': 'On loan', 'onderweg': 'In transit', 'in onderhoud': 'In maintenance' },
+      sectionRequester: 'Requester', organisation: 'Organisation', chooseOption: 'Choose…',
+      requestBy: 'Request by (your name)', responsibleSales: 'Responsible sales team member',
+      reseller: 'Legamaster reseller', salesPotential: 'Sales potential (units)',
+      reasonForDemo: 'Reason for demo', reasonHint: '(e.g. tender, new dealer)',
+      sectionShip: 'Ship to address', shipCompany: 'Company name', shipContact: 'Contact person',
+      shipPhone: '(Mobile) phone number', shipStreet: 'Street and number',
+      shipPostalCity: 'Postal code and city', shipCountry: 'Country',
+      shipSpecial: 'Special delivery information', shipSpecialHint: '(e.g. 2nd floor, no lift)',
+      sectionProduct: 'Demo product required', demoProduct: 'Demo product', chooseProduct: 'Choose a product…',
+      extras: 'Extras required', airserver: 'AirServer', demoPC: 'Demo PC', navigator: 'Navigator', camera: '4K camera',
+      sectionPeriod: 'Period', periodSub: 'Maximum demo period is {weeks} weeks',
+      dateArrive: 'Date product must arrive', datePickup: 'Date product must be picked up',
+      periodWarningOrder: 'Pickup date is before the arrival date — please check the dates.',
+      periodWarningMax: 'Note: this exceeds the maximum demo period of {weeks} weeks. Please check with Bram before submitting.',
+      remarks: 'Remarks', submit: 'Submit request', submitting: 'Submitting…',
+      successMsg: 'Request submitted ({id}). Bram has been notified automatically.',
+      errorMsg: 'Submission failed: {err}. Please try again or contact Tom.',
+      checkDates: 'Please check the selected dates before submitting.'
+    },
+    nl: {
+      title: 'Demo scherm aanvragen',
+      availToggle: 'Bekijk beschikbaarheid demo schermen', availLoading: 'Laden…',
+      availEmpty: 'Nog geen schermen bekend.', availError: 'Kan beschikbaarheid niet laden.',
+      availModel: 'Model', availStatus: 'Status', availLocation: 'Locatie', availReturn: 'Verwacht terug',
+      statusMap: { 'beschikbaar': 'Beschikbaar', 'uitgeleend': 'Uitgeleend', 'onderweg': 'Onderweg', 'in onderhoud': 'In onderhoud' },
+      sectionRequester: 'Aanvrager', organisation: 'Organisatie', chooseOption: 'Kies…',
+      requestBy: 'Request by (jouw naam)', responsibleSales: 'Verantwoordelijke sales',
+      reseller: 'Legamaster reseller', salesPotential: 'Sales potentieel (units)',
+      reasonForDemo: 'Reden voor demo', reasonHint: '(bv. tender, nieuwe dealer)',
+      sectionShip: 'Afleveradres', shipCompany: 'Bedrijfsnaam', shipContact: 'Contactpersoon',
+      shipPhone: '(Mobiel) telefoonnummer', shipStreet: 'Straat en huisnummer',
+      shipPostalCity: 'Postcode en plaats', shipCountry: 'Land',
+      shipSpecial: 'Bijzonderheden bezorging', shipSpecialHint: '(bv. 2e verdieping, geen lift)',
+      sectionProduct: 'Gewenst demo product', demoProduct: 'Demo product', chooseProduct: 'Kies een product…',
+      extras: 'Extra benodigdheden', airserver: 'AirServer', demoPC: 'Demo PC', navigator: 'Navigator', camera: '4K camera',
+      sectionPeriod: 'Periode', periodSub: 'Maximale demoperiode is {weeks} weken',
+      dateArrive: 'Datum aankomst product', datePickup: 'Datum ophalen product',
+      periodWarningOrder: 'Ophaaldatum ligt vóór de aankomstdatum — controleer de data.',
+      periodWarningMax: 'Let op: dit is langer dan de maximale demoperiode van {weeks} weken. Overleg met Bram voor je verstuurt.',
+      remarks: 'Opmerkingen', submit: 'Aanvraag versturen', submitting: 'Versturen…',
+      successMsg: 'Aanvraag verstuurd ({id}). Bram is automatisch op de hoogte gebracht.',
+      errorMsg: 'Versturen mislukt: {err}. Probeer het opnieuw of neem contact op met Tom.',
+      checkDates: 'Controleer de gekozen data voor je verstuurt.'
+    },
+    de: {
+      title: 'Demo-Bildschirm anfragen',
+      availToggle: 'Verfügbarkeit der Demo-Bildschirme ansehen', availLoading: 'Wird geladen…',
+      availEmpty: 'Noch keine Bildschirme bekannt.', availError: 'Verfügbarkeit konnte nicht geladen werden.',
+      availModel: 'Modell', availStatus: 'Status', availLocation: 'Standort', availReturn: 'Erwartete Rückkehr',
+      statusMap: { 'beschikbaar': 'Verfügbar', 'uitgeleend': 'Verliehen', 'onderweg': 'Unterwegs', 'in onderhoud': 'In Wartung' },
+      sectionRequester: 'Antragsteller', organisation: 'Organisation', chooseOption: 'Auswählen…',
+      requestBy: 'Angefragt von (Ihr Name)', responsibleSales: 'Zuständiger Vertriebsmitarbeiter',
+      reseller: 'Legamaster Reseller', salesPotential: 'Verkaufspotenzial (Einheiten)',
+      reasonForDemo: 'Grund für die Demo', reasonHint: '(z. B. Ausschreibung, neuer Händler)',
+      sectionShip: 'Lieferadresse', shipCompany: 'Firmenname', shipContact: 'Ansprechpartner',
+      shipPhone: '(Mobil-)Telefonnummer', shipStreet: 'Straße und Hausnummer',
+      shipPostalCity: 'Postleitzahl und Ort', shipCountry: 'Land',
+      shipSpecial: 'Besondere Lieferhinweise', shipSpecialHint: '(z. B. 2. Stock, kein Aufzug)',
+      sectionProduct: 'Gewünschtes Demo-Produkt', demoProduct: 'Demo-Produkt', chooseProduct: 'Produkt auswählen…',
+      extras: 'Zusätzlich benötigt', airserver: 'AirServer', demoPC: 'Demo-PC', navigator: 'Navigator', camera: '4K-Kamera',
+      sectionPeriod: 'Zeitraum', periodSub: 'Maximale Demodauer beträgt {weeks} Wochen',
+      dateArrive: 'Datum der Anlieferung', datePickup: 'Datum der Abholung',
+      periodWarningOrder: 'Das Abholdatum liegt vor dem Anlieferdatum — bitte Daten prüfen.',
+      periodWarningMax: 'Hinweis: Dies überschreitet die maximale Demodauer von {weeks} Wochen. Bitte vor dem Absenden mit Bram abstimmen.',
+      remarks: 'Bemerkungen', submit: 'Anfrage senden', submitting: 'Wird gesendet…',
+      successMsg: 'Anfrage gesendet ({id}). Bram wurde automatisch benachrichtigt.',
+      errorMsg: 'Senden fehlgeschlagen: {err}. Bitte erneut versuchen oder Tom kontaktieren.',
+      checkDates: 'Bitte prüfen Sie die gewählten Daten vor dem Absenden.'
+    },
+    fr: {
+      title: 'Demander un écran de démonstration',
+      availToggle: 'Voir la disponibilité des écrans de démo', availLoading: 'Chargement…',
+      availEmpty: 'Aucun écran connu pour le moment.', availError: 'Impossible de charger la disponibilité.',
+      availModel: 'Modèle', availStatus: 'Statut', availLocation: 'Emplacement', availReturn: 'Retour prévu',
+      statusMap: { 'beschikbaar': 'Disponible', 'uitgeleend': 'Prêté', 'onderweg': 'En transit', 'in onderhoud': 'En entretien' },
+      sectionRequester: 'Demandeur', organisation: 'Organisation', chooseOption: 'Choisir…',
+      requestBy: 'Demandé par (votre nom)', responsibleSales: 'Responsable commercial',
+      reseller: 'Revendeur Legamaster', salesPotential: 'Potentiel de vente (unités)',
+      reasonForDemo: 'Motif de la démo', reasonHint: "(ex. appel d'offres, nouveau revendeur)",
+      sectionShip: 'Adresse de livraison', shipCompany: "Nom de l'entreprise", shipContact: 'Personne à contacter',
+      shipPhone: 'Numéro de téléphone (mobile)', shipStreet: 'Rue et numéro',
+      shipPostalCity: 'Code postal et ville', shipCountry: 'Pays',
+      shipSpecial: 'Informations de livraison particulières', shipSpecialHint: "(ex. 2e étage, pas d'ascenseur)",
+      sectionProduct: 'Produit de démonstration souhaité', demoProduct: 'Produit de démo', chooseProduct: 'Choisir un produit…',
+      extras: 'Accessoires nécessaires', airserver: 'AirServer', demoPC: 'PC de démo', navigator: 'Navigator', camera: 'Caméra 4K',
+      sectionPeriod: 'Période', periodSub: 'La durée maximale de démonstration est de {weeks} semaines',
+      dateArrive: "Date d'arrivée du produit", datePickup: 'Date de reprise du produit',
+      periodWarningOrder: "La date de reprise précède la date d'arrivée — veuillez vérifier les dates.",
+      periodWarningMax: "Attention : ceci dépasse la durée maximale de démonstration de {weeks} semaines. Merci de vérifier avec Bram avant l'envoi.",
+      remarks: 'Remarques', submit: 'Envoyer la demande', submitting: 'Envoi en cours…',
+      successMsg: 'Demande envoyée ({id}). Bram a été notifié automatiquement.',
+      errorMsg: "Échec de l'envoi : {err}. Veuillez réessayer ou contacter Tom.",
+      checkDates: "Veuillez vérifier les dates sélectionnées avant l'envoi."
+    }
+  };
+
+  let LANG = 'en';
+  function t(key) { return (I18N[LANG] && I18N[LANG][key]) || I18N.en[key] || key; }
+
+  function applyLanguage(lang) {
+    LANG = I18N[lang] ? lang : 'en';
+    document.documentElement.lang = LANG;
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+      const key = el.getAttribute('data-i18n');
+      if (key === 'periodSub') return; // rendered separately with the weeks value
+      el.textContent = t(key);
+    });
+    document.getElementById('periodSub').textContent = t('periodSub').replace('{weeks}', Math.round(MAX_DEMO_DAYS / 7));
+    document.querySelectorAll('.lang-switch button').forEach(b => b.classList.toggle('active', b.dataset.lang === LANG));
+    if (availLoaded) renderAvailability(LAST_AVAILABILITY);
+    sessionStorage.setItem('demopool_lang', LANG);
+  }
+
+  document.getElementById('langSwitch').addEventListener('click', e => {
+    const btn = e.target.closest('button[data-lang]');
+    if (btn) applyLanguage(btn.dataset.lang);
+  });
+
+  // ---------- Form options ----------
+  let MAX_DEMO_DAYS = 21;
+  const orgSelect = document.getElementById('organisation');
+  const productSelect = document.getElementById('demoProduct');
+
+  fetch(APPS_SCRIPT_URL + '?action=getFormOptions')
+    .then(r => r.json())
+    .then(data => {
+      if (!data.ok) return;
+      MAX_DEMO_DAYS = data.maxDemoDays || 21;
+      document.getElementById('periodSub').textContent = t('periodSub').replace('{weeks}', Math.round(MAX_DEMO_DAYS / 7));
+      data.organisations.forEach(o => { const opt = document.createElement('option'); opt.value = o; opt.textContent = o; orgSelect.appendChild(opt); });
+      data.demoProducts.forEach(p => { const opt = document.createElement('option'); opt.value = p; opt.textContent = p; productSelect.appendChild(opt); });
+    })
+    .catch(() => { /* options failed to load, form remains usable */ });
+
+  // ---------- Availability ----------
+  const availToggle = document.getElementById('availToggle');
+  const availPanel = document.getElementById('availPanel');
+  let availLoaded = false;
+  let LAST_AVAILABILITY = [];
+
+  availToggle.addEventListener('click', () => {
+    const open = availPanel.style.display === 'block';
+    availPanel.style.display = open ? 'none' : 'block';
+    availToggle.classList.toggle('open', !open);
+    if (!open && !availLoaded) loadAvailability();
+  });
+
+  function loadAvailability() {
+    fetch(APPS_SCRIPT_URL + '?action=getAvailability')
+      .then(r => r.json())
+      .then(data => {
+        const loading = document.getElementById('availLoading');
+        if (!data.ok || !data.screens.length) {
+          loading.textContent = data.ok ? t('availEmpty') : t('availError');
+          return;
+        }
+        availLoaded = true;
+        LAST_AVAILABILITY = data.screens;
+        renderAvailability(data.screens);
+      })
+      .catch(() => { document.getElementById('availLoading').textContent = t('availError'); });
+  }
+
+  function renderAvailability(screens) {
+    const loading = document.getElementById('availLoading');
+    const table = document.getElementById('availTable');
+    const sorted = screens.slice().sort((a, b) => (a.model || '').localeCompare(b.model || ''));
+    const tbody = table.querySelector('tbody');
+    tbody.innerHTML = sorted.map(s => {
+      const rawStatus = s.status || '';
+      const statusClass = rawStatus.replace(/\s+/g, '.');
+      const statusLabel = t('statusMap')[rawStatus] || rawStatus || '—';
+      return '<tr>' +
+        '<td>' + (s.model || '—') + '</td>' +
+        '<td><span class="avail-status ' + statusClass + '">' + statusLabel + '</span></td>' +
+        '<td>' + (rawStatus === 'beschikbaar' ? '—' : (s.locatie || '—')) + '</td>' +
+        '<td>' + (rawStatus === 'beschikbaar' ? '—' : (s.verwachteTerugkomst || '—')) + '</td>' +
+        '</tr>';
+    }).join('');
+    loading.style.display = 'none';
+    table.style.display = 'table';
+  }
+
+  ['pillAir', 'pillPC', 'pillNav', 'pillCam'].forEach(id => {
+    const pill = document.getElementById(id);
+    const box = pill.querySelector('input');
+    box.addEventListener('change', () => pill.classList.toggle('active', box.checked));
+  });
+
+  const arriveInput = document.getElementById('dateArrive');
+  const pickupInput = document.getElementById('datePickup');
+  const periodWarning = document.getElementById('periodWarning');
+
+  function checkPeriod() {
+    if (!arriveInput.value || !pickupInput.value) { periodWarning.style.display = 'none'; return true; }
+    const days = (new Date(pickupInput.value) - new Date(arriveInput.value)) / 86400000;
+    if (days < 0) {
+      periodWarning.textContent = t('periodWarningOrder');
+      periodWarning.style.display = 'block';
+      return false;
+    }
+    if (days > MAX_DEMO_DAYS) {
+      periodWarning.textContent = t('periodWarningMax').replace('{weeks}', Math.round(MAX_DEMO_DAYS / 7));
+      periodWarning.style.display = 'block';
+      return false;
+    }
+    periodWarning.style.display = 'none';
+    return true;
+  }
+  arriveInput.addEventListener('change', checkPeriod);
+  pickupInput.addEventListener('change', checkPeriod);
+
+  const form = document.getElementById('requestForm');
+  const msg = document.getElementById('msg');
+  const btn = document.getElementById('submitBtn');
+
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    msg.className = 'msg';
+
+    if (!checkPeriod() && (new Date(pickupInput.value) - new Date(arriveInput.value)) < 0) {
+      msg.textContent = t('checkDates');
+      msg.className = 'msg err';
+      return;
+    }
+
+    btn.disabled = true; btn.textContent = t('submitting');
+
+    const payload = {
+      action: 'submitRequest',
+      organisation: document.getElementById('organisation').value,
+      requestBy: document.getElementById('requestBy').value.trim(),
+      responsibleSalesTeamMember: document.getElementById('responsibleSalesTeamMember').value.trim(),
+      legamasterReseller: document.getElementById('legamasterReseller').value.trim(),
+      salesPotentialUnits: document.getElementById('salesPotentialUnits').value,
+      reasonForDemo: document.getElementById('reasonForDemo').value.trim(),
+      shipCompanyName: document.getElementById('shipCompanyName').value.trim(),
+      shipContactPerson: document.getElementById('shipContactPerson').value.trim(),
+      shipPhone: document.getElementById('shipPhone').value.trim(),
+      shipStreet: document.getElementById('shipStreet').value.trim(),
+      shipPostalCity: document.getElementById('shipPostalCity').value.trim(),
+      shipCountry: document.getElementById('shipCountry').value.trim(),
+      shipSpecialDeliveryInfo: document.getElementById('shipSpecialDeliveryInfo').value.trim(),
+      demoProduct: document.getElementById('demoProduct').value,
+      airServerNodig: document.getElementById('airServerNodig').checked,
+      demoPCNodig: document.getElementById('demoPCNodig').checked,
+      navigatorNodig: document.getElementById('navigatorNodig').checked,
+      cameraNodig: document.getElementById('cameraNodig').checked,
+      dateArrive: arriveInput.value,
+      datePickup: pickupInput.value,
+      remarks: document.getElementById('remarks').value.trim()
+    };
+
+    fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(payload)
+    })
+      .then(r => r.json())
+      .then(data => {
+        if (data.ok) {
+          msg.textContent = t('successMsg').replace('{id}', data.requestId);
+          msg.className = 'msg ok';
+          form.reset();
+          document.querySelectorAll('.check-pill').forEach(p => p.classList.remove('active'));
+          periodWarning.style.display = 'none';
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        } else {
+          throw new Error(data.error || 'Unknown error');
+        }
+      })
+      .catch(err => {
+        msg.textContent = t('errorMsg').replace('{err}', err.message);
+        msg.className = 'msg err';
+      })
+      .finally(() => { btn.disabled = false; btn.textContent = t('submit'); });
+  });
+
+  // ---------- Init ----------
+  applyLanguage(sessionStorage.getItem('demopool_lang') || 'en');
+</script>
+
+</body>
+</html>
