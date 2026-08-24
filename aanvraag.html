@@ -210,7 +210,7 @@
 
 <script>
   // Fill this in after deploying the Apps Script Web App:
-  const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxBBXpuqZMSev_rA0UlKQtWpP09eCB7gapNatqp9tL1-M6mOcgEeSZ6_CN1MMG2Fs5b/exec';
+  const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwW47To7cT25obf3vAOVja0q42K3Hq6XWPyHr9R_lrz48llx8-hpR_hRAw3zPPyiUZ3/exec';
 
   // ---------- Translations ----------
   const I18N = {
@@ -230,6 +230,7 @@
       shipSpecial: 'Special delivery information', shipSpecialHint: '(e.g. 2nd floor, no lift)',
       sectionProduct: 'Demo product required', demoProduct: 'Demo product', chooseProduct: 'Choose a product…',
       mountType: 'Mount / base', chooseMount: 'Choose a mount…',
+      mountLabels: { 'Flightcase met EHA-onderstel': 'Flightcase with EHA base', 'In box op pallet': 'In box on pallet' },
       extras: 'Extras required', airserver: 'AirServer', demoPC: 'Demo PC', navigator: 'Navigator', camera: '4K camera',
       sectionPeriod: 'Period', periodSub: 'Maximum demo period is {weeks} weeks',
       dateArrive: 'Date product must arrive', datePickup: 'Date product must be picked up',
@@ -256,6 +257,7 @@
       shipSpecial: 'Bijzonderheden bezorging', shipSpecialHint: '(bv. 2e verdieping, geen lift)',
       sectionProduct: 'Gewenst demo product', demoProduct: 'Demo product', chooseProduct: 'Kies een product…',
       mountType: 'Onderstel', chooseMount: 'Kies een onderstel…',
+      mountLabels: { 'Flightcase met EHA-onderstel': 'Flightcase met EHA-onderstel', 'In box op pallet': 'In box op pallet' },
       extras: 'Extra benodigdheden', airserver: 'AirServer', demoPC: 'Demo PC', navigator: 'Navigator', camera: '4K camera',
       sectionPeriod: 'Periode', periodSub: 'Maximale demoperiode is {weeks} weken',
       dateArrive: 'Datum aankomst product', datePickup: 'Datum ophalen product',
@@ -282,6 +284,7 @@
       shipSpecial: 'Besondere Lieferhinweise', shipSpecialHint: '(z. B. 2. Stock, kein Aufzug)',
       sectionProduct: 'Gewünschtes Demo-Produkt', demoProduct: 'Demo-Produkt', chooseProduct: 'Produkt auswählen…',
       mountType: 'Gestell / Untergestell', chooseMount: 'Gestell auswählen…',
+      mountLabels: { 'Flightcase met EHA-onderstel': 'Flightcase mit EHA-Gestell', 'In box op pallet': 'In Box auf Palette' },
       extras: 'Zusätzlich benötigt', airserver: 'AirServer', demoPC: 'Demo-PC', navigator: 'Navigator', camera: '4K-Kamera',
       sectionPeriod: 'Zeitraum', periodSub: 'Maximale Demodauer beträgt {weeks} Wochen',
       dateArrive: 'Datum der Anlieferung', datePickup: 'Datum der Abholung',
@@ -308,6 +311,7 @@
       shipSpecial: 'Informations de livraison particulières', shipSpecialHint: "(ex. 2e étage, pas d'ascenseur)",
       sectionProduct: 'Produit de démonstration souhaité', demoProduct: 'Produit de démo', chooseProduct: 'Choisir un produit…',
       mountType: 'Support / socle', chooseMount: 'Choisir un support…',
+      mountLabels: { 'Flightcase met EHA-onderstel': 'Flightcase avec base EHA', 'In box op pallet': 'En boîte sur palette' },
       extras: 'Accessoires nécessaires', airserver: 'AirServer', demoPC: 'PC de démo', navigator: 'Navigator', camera: 'Caméra 4K',
       sectionPeriod: 'Période', periodSub: 'La durée maximale de démonstration est de {weeks} semaines',
       dateArrive: "Date d'arrivée du produit", datePickup: 'Date de reprise du produit',
@@ -323,6 +327,19 @@
   let LANG = 'en';
   function t(key) { return (I18N[LANG] && I18N[LANG][key]) || I18N.en[key] || key; }
 
+  function renderMountOptions() {
+    const current = mountSelect.value;
+    mountSelect.innerHTML = '<option value="">' + t('chooseMount') + '</option>';
+    const labels = t('mountLabels') || {};
+    LAST_MOUNT_TYPES.forEach(m => {
+      const opt = document.createElement('option');
+      opt.value = m;
+      opt.textContent = labels[m] || m;
+      mountSelect.appendChild(opt);
+    });
+    mountSelect.value = current;
+  }
+
   function applyLanguage(lang) {
     LANG = I18N[lang] ? lang : 'en';
     document.documentElement.lang = LANG;
@@ -333,6 +350,7 @@
     });
     document.getElementById('periodSub').textContent = t('periodSub').replace('{weeks}', Math.round(MAX_DEMO_DAYS / 7));
     document.querySelectorAll('.lang-switch button').forEach(b => b.classList.toggle('active', b.dataset.lang === LANG));
+    renderMountOptions();
     sessionStorage.setItem('demopool_lang', LANG);
   }
 
@@ -343,6 +361,7 @@
 
   // ---------- Form options ----------
   let MAX_DEMO_DAYS = 21;
+  let LAST_MOUNT_TYPES = [];
   const orgSelect = document.getElementById('organisation');
   const productSelect = document.getElementById('demoProduct');
   const mountSelect = document.getElementById('mountType');
@@ -355,7 +374,8 @@
       document.getElementById('periodSub').textContent = t('periodSub').replace('{weeks}', Math.round(MAX_DEMO_DAYS / 7));
       data.organisations.forEach(o => { const opt = document.createElement('option'); opt.value = o; opt.textContent = o; orgSelect.appendChild(opt); });
       data.demoProducts.forEach(p => { const opt = document.createElement('option'); opt.value = p; opt.textContent = p; productSelect.appendChild(opt); });
-      (data.mountTypes || []).forEach(m => { const opt = document.createElement('option'); opt.value = m; opt.textContent = m; mountSelect.appendChild(opt); });
+      LAST_MOUNT_TYPES = data.mountTypes || [];
+      renderMountOptions();
     })
     .catch(() => { /* options failed to load, form remains usable */ });
 
