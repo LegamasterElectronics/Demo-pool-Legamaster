@@ -51,8 +51,9 @@
   .list-card { background: #fff; border-radius: 12px; overflow: hidden; border: 1px solid #e2e6ea; }
   .list-head, .list-row-summary { display: grid; gap: 10px; padding: 11px 16px; align-items: center; }
   .list-head { background: var(--grey-bg); font-size: 11px; text-transform: uppercase; letter-spacing: 0.03em; color: var(--muted); font-weight: 650; padding: 11px 16px; }
-  .req-cols { grid-template-columns: 90px 90px 1.3fr 1.1fr 1.1fr 130px 110px 110px 80px; }
-  .scr-cols { grid-template-columns: 120px 1.1fr 1fr 130px 1.2fr 90px; }
+  .req-cols { grid-template-columns: 110px 90px 1.3fr 1.1fr 1.1fr 130px 110px 110px 80px; }
+  .scr-cols { grid-template-columns: 150px 1fr 1fr 130px 1.2fr 90px; }
+  .list-row-summary > div { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .list-row { border-top: 1px solid var(--line); }
   .list-row-summary { padding: 14px 16px; font-size: 13px; }
   .list-row.is-new .list-row-summary { background: #fffaf2; box-shadow: inset 3px 0 0 var(--accent); }
@@ -283,14 +284,14 @@
       row.className = 'list-row' + (req.status === 'nieuw' ? ' is-new' : '');
       row.innerHTML =
         '<div class="list-row-summary req-cols">' +
-          '<div style="font-weight:600;">' + id + '</div>' +
+          '<div style="font-weight:600;" title="' + esc(id) + '">' + id + '</div>' +
           '<div style="color:var(--muted);">' + fmtDate(req.timestamp) + '</div>' +
-          '<div><strong>' + esc(req.shipCompanyName) + '</strong><br><span style="color:var(--muted);font-size:12px;">' + esc(req.organisation) + '</span></div>' +
-          '<div>' + esc(req.demoProduct) + '</div>' +
+          '<div title="' + esc(req.shipCompanyName) + '"><strong>' + esc(req.shipCompanyName) + '</strong><br><span style="color:var(--muted);font-size:12px;">' + esc(req.organisation) + '</span></div>' +
+          '<div title="' + esc(req.demoProduct) + '">' + esc(req.demoProduct) + '</div>' +
           '<div>' + badge('Air', req.airServerNodig) + badge('PC', req.demoPCNodig) + badge('Nav', req.navigatorNodig) + badge('Cam', req.cameraNodig) + '</div>' +
           '<div style="white-space:nowrap;font-size:12.5px;">' + fmtDate(req.dateArrive) + ' → ' + fmtDate(req.datePickup) + '</div>' +
           '<div><span class="status-badge ' + esc(req.status) + '">' + esc(req.status) + '</span></div>' +
-          '<div style="font-size:12.5px;">' + esc(req.toegewezenScreenID || '—') + '</div>' +
+          '<div style="font-size:12.5px;" title="' + esc(req.toegewezenScreenID || '') + '">' + esc(req.toegewezenScreenID || '—') + '</div>' +
           '<div style="text-align:right;"><button class="toggle-details" data-id="' + id + '">' + (OPEN_REQUEST_IDS.has(id) ? 'Verberg' : 'Details') + '</button></div>' +
         '</div>' +
         '<div class="detail-row" id="detail-' + id + '" style="' + (OPEN_REQUEST_IDS.has(id) ? 'display:table-row;' : '') + '"></div>';
@@ -468,11 +469,11 @@
       row.className = 'list-row';
       row.innerHTML =
         '<div class="list-row-summary scr-cols">' +
-          '<div style="font-weight:600;">' + id + '</div>' +
-          '<div>' + esc(scr.model) + '</div>' +
-          '<div style="color:var(--muted);">' + esc(scr.serienummer) + '</div>' +
+          '<div style="font-weight:600;" title="' + esc(id) + '">' + id + '</div>' +
+          '<div title="' + esc(scr.model) + '">' + esc(scr.model) + '</div>' +
+          '<div style="color:var(--muted);" title="' + esc(scr.serienummer) + '">' + esc(scr.serienummer) + '</div>' +
           '<div><span class="status-badge ' + esc(scr.status) + '">' + esc(scr.status) + '</span></div>' +
-          '<div>' + esc(scr.locatie || '—') + '</div>' +
+          '<div title="' + esc(scr.locatie || '') + '">' + esc(scr.locatie || '—') + '</div>' +
           '<div style="text-align:right;"><button class="toggle-details" data-id="' + id + '">' + (OPEN_SCREEN_IDS.has(id) ? 'Verberg' : 'Details') + '</button></div>' +
         '</div>' +
         '<div class="detail-row" id="sdetail-' + id + '" style="' + (OPEN_SCREEN_IDS.has(id) ? 'display:block;' : '') + '"></div>';
