@@ -47,6 +47,16 @@
   .toolbar input[type=text] { width: 240px; }
   .toolbar .count-text { color: var(--muted); font-size: 13px; }
   button.refresh { background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 8px 14px; cursor: pointer; font-size: 13px; font-weight: 600; font-family: inherit; }
+  button.add-screen-btn { background: var(--accent); border: none; color: #fff; border-radius: 8px; padding: 8px 14px; cursor: pointer; font-size: 13px; font-weight: 700; font-family: inherit; }
+  button.add-screen-btn:hover { background: var(--accent-dark); }
+  .add-screen-card { background: #fff; border: 1.5px solid var(--accent); border-radius: 12px; padding: 18px 20px; margin-bottom: 14px; }
+  .add-screen-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
+  .add-screen-grid label { display: block; font-size: 11px; font-weight: 650; color: var(--muted); text-transform: uppercase; letter-spacing: 0.03em; margin-bottom: 4px; }
+  .add-screen-grid input, .add-screen-grid select { width: 100%; padding: 9px 10px; border: 1px solid var(--line); border-radius: 7px; font-size: 13.5px; font-family: inherit; }
+  .add-screen-actions { display: flex; align-items: center; justify-content: flex-end; gap: 10px; margin-top: 14px; }
+  .add-screen-err { color: var(--err); font-size: 12.5px; margin-right: auto; }
+  .add-screen-actions button.cancel { background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 9px 16px; cursor: pointer; font-size: 13px; font-weight: 600; font-family: inherit; }
+  @media (max-width: 900px) { .add-screen-grid { grid-template-columns: 1fr 1fr; } }
 
   .list-card { background: #fff; border-radius: 12px; overflow: hidden; border: 1px solid #e2e6ea; }
   .list-head, .list-row-summary { display: grid; gap: 10px; padding: 11px 16px; align-items: center; }
@@ -140,12 +150,46 @@
     <div id="tab-screens" style="display:none;">
       <div class="toolbar">
         <div class="filters">
-          <input type="text" id="scrSearch" placeholder="Zoek op model, serienr. of locatie…">
+          <input type="text" id="scrSearch" placeholder="Zoek op ID, model, serienr. of locatie…">
           <select id="scrStatusFilter"><option value="">Alle statussen</option></select>
           <span class="count-text" id="scrCount"></span>
         </div>
-        <button class="refresh" id="scrRefresh">↻ Ververs</button>
+        <div style="display:flex; gap:8px;">
+          <button class="add-screen-btn" id="addScreenToggle">+ Nieuw scherm</button>
+          <button class="refresh" id="scrRefresh">↻ Ververs</button>
+        </div>
       </div>
+
+      <div class="add-screen-card" id="addScreenCard" style="display:none;">
+        <div class="add-screen-grid">
+          <div>
+            <label>ScreenID *</label>
+            <input type="text" id="newScreenID" placeholder="bv. EVP650025090099">
+          </div>
+          <div>
+            <label>Model *</label>
+            <input type="text" id="newScreenModel" placeholder="bv. EVP-6500">
+          </div>
+          <div>
+            <label>Serienummer</label>
+            <input type="text" id="newScreenSerie" placeholder="laat leeg om ScreenID te gebruiken">
+          </div>
+          <div>
+            <label>Status</label>
+            <select id="newScreenStatus"></select>
+          </div>
+          <div>
+            <label>Locatie</label>
+            <input type="text" id="newScreenLocatie" placeholder="bv. kantoor Lochem">
+          </div>
+        </div>
+        <div class="add-screen-actions">
+          <span class="add-screen-err" id="addScreenErr"></span>
+          <button class="cancel" id="addScreenCancel">Annuleren</button>
+          <button class="save" id="addScreenSubmit">Toevoegen</button>
+        </div>
+      </div>
+
       <div class="list-card">
         <div class="list-head scr-cols"><div>ID</div><div>Model</div><div>Serienr.</div><div>Status</div><div>Locatie</div><div></div></div>
         <div id="scrRows"></div>
@@ -235,6 +279,13 @@
     if (v === undefined || v === null) return '';
     return String(v).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   }
+  // Veilig naar lowercase tekst omzetten voor zoekfilters, ongeacht of de
+  // Sheet-waarde een getal, datum of leeg veld is (voorkomt een stille crash
+  // die anders alle event listeners verderop in het script zou blokkeren).
+  function sv(v) {
+    if (v === undefined || v === null) return '';
+    return String(v).toLowerCase();
+  }
   function selectHtml(id, options, current) {
     return '<select id="' + id + '">' + options.map(o =>
       '<option value="' + o + '"' + (o === current ? ' selected' : '') + '>' + o + '</option>'
@@ -263,7 +314,7 @@
     const q = document.getElementById('reqSearch').value.trim().toLowerCase();
     const statusFilter = document.getElementById('reqStatusFilter').value;
     const filtered = LATEST_REQUESTS.filter(r => {
-      const matchesQ = !q || (r.shipCompanyName || '').toLowerCase().includes(q) || (r.organisation || '').toLowerCase().includes(q);
+      const matchesQ = !q || sv(r.shipCompanyName).includes(q) || sv(r.organisation).includes(q) || sv(r.requestID).includes(q);
       const matchesStatus = !statusFilter || r.status === statusFilter;
       return matchesQ && matchesStatus;
     });
@@ -448,7 +499,7 @@
     const q = document.getElementById('scrSearch').value.trim().toLowerCase();
     const statusFilter = document.getElementById('scrStatusFilter').value;
     const filtered = LATEST_SCREENS.filter(sc => {
-      const matchesQ = !q || (sc.model || '').toLowerCase().includes(q) || (sc.locatie || '').toLowerCase().includes(q) || (sc.serienummer || '').toLowerCase().includes(q);
+      const matchesQ = !q || sv(sc.model).includes(q) || sv(sc.locatie).includes(q) || sv(sc.serienummer).includes(q) || sv(sc.screenID).includes(q);
       const matchesStatus = !statusFilter || sc.status === statusFilter;
       return matchesQ && matchesStatus;
     });
@@ -541,6 +592,71 @@
 
   document.getElementById('reqRefresh').addEventListener('click', loadRequests);
   document.getElementById('scrRefresh').addEventListener('click', loadScreens);
+
+  // ---- Nieuw scherm toevoegen ----
+  const addScreenCard = document.getElementById('addScreenCard');
+  const addScreenToggle = document.getElementById('addScreenToggle');
+  const addScreenCancel = document.getElementById('addScreenCancel');
+  const addScreenSubmit = document.getElementById('addScreenSubmit');
+  const addScreenErr = document.getElementById('addScreenErr');
+  const newScreenStatusSelect = document.getElementById('newScreenStatus');
+  newScreenStatusSelect.innerHTML = SCREEN_STATUSSEN.map(s => '<option value="' + s + '">' + s + '</option>').join('');
+
+  function toggleAddScreenCard(show) {
+    addScreenCard.style.display = show ? 'block' : 'none';
+    addScreenErr.textContent = '';
+    if (show) {
+      ['newScreenID', 'newScreenModel', 'newScreenSerie', 'newScreenLocatie'].forEach(id => document.getElementById(id).value = '');
+      newScreenStatusSelect.value = 'beschikbaar';
+      document.getElementById('newScreenID').focus();
+    }
+  }
+  addScreenToggle.addEventListener('click', () => toggleAddScreenCard(addScreenCard.style.display !== 'block'));
+  addScreenCancel.addEventListener('click', () => toggleAddScreenCard(false));
+
+  addScreenSubmit.addEventListener('click', () => {
+    const screenID = document.getElementById('newScreenID').value.trim();
+    const model = document.getElementById('newScreenModel').value.trim();
+    const serienummer = document.getElementById('newScreenSerie').value.trim();
+    const locatie = document.getElementById('newScreenLocatie').value.trim();
+    const status = newScreenStatusSelect.value;
+
+    if (!screenID || !model) {
+      addScreenErr.textContent = 'ScreenID en Model zijn verplicht.';
+      return;
+    }
+    if (LATEST_SCREENS.some(sc => String(sc.screenID) === screenID)) {
+      addScreenErr.textContent = 'Er bestaat al een scherm met dit ScreenID.';
+      return;
+    }
+
+    addScreenErr.textContent = '';
+    addScreenSubmit.disabled = true; addScreenSubmit.textContent = 'Toevoegen…';
+
+    const payload = {
+      action: 'addScreen',
+      password: PASSWORD,
+      screenID: screenID,
+      model: model,
+      serienummer: serienummer || screenID,
+      status: status,
+      locatie: locatie
+    };
+
+    fetch(APPS_SCRIPT_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload) })
+      .then(r => r.json())
+      .then(data => {
+        if (data.ok) {
+          toast('Scherm toegevoegd');
+          toggleAddScreenCard(false);
+          loadScreens();
+        } else {
+          addScreenErr.textContent = 'Mislukt: ' + data.error;
+        }
+      })
+      .catch(() => { addScreenErr.textContent = 'Mislukt: kan niet verbinden.'; })
+      .finally(() => { addScreenSubmit.disabled = false; addScreenSubmit.textContent = 'Toevoegen'; });
+  });
 </script>
 
 
