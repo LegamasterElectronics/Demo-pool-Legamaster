@@ -1,6 +1,6 @@
 <!DOCTYPE html>
-<html lang="nl">
-<head>
+<html lang="nl"><head>
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Demo pool beheer - Legamaster</title>
@@ -8,7 +8,7 @@
 <link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
 <link rel="apple-touch-icon" href="favicon-180.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -20,57 +20,76 @@
   * { box-sizing: border-box; }
   body { margin: 0; font-family: 'Roboto', -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; background: var(--paper); color: var(--text); font-size: 14px; }
   #gate { height: 100vh; display: flex; align-items: center; justify-content: center; background: var(--navy); }
-  #gate .box { background: #fff; padding: 32px; border-radius: 12px; width: 320px; text-align: center; }
-  #gate img.logo { height: 24px; margin-bottom: 18px; }
+  #gate .box { background: #fff; padding: 36px; border-radius: 14px; width: 320px; text-align: center; }
+  #gate img.logo { height: 24px; margin-bottom: 20px; }
   #gate h1 { font-size: 17px; margin: 0 0 4px; }
-  #gate p { color: var(--muted); font-size: 13px; margin: 0 0 18px; }
-  #gate input { width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; font-size: 15px; margin-bottom: 12px; font-family: inherit; }
-  #gate button { width: 100%; padding: 11px; border: none; border-radius: 8px; background: var(--accent); color: #fff; font-weight: 700; font-size: 15px; cursor: pointer; font-family: inherit; }
-  #gate .err { color: var(--err); font-size: 12.5px; margin-top: 8px; min-height: 16px; }
+  #gate p { color: var(--muted); font-size: 13px; margin: 0 0 20px; }
+  #gate input { width: 100%; padding: 11px 12px; border: 1px solid var(--line); border-radius: 8px; font-size: 15px; margin-bottom: 12px; font-family: inherit; }
+  #gate button { width: 100%; padding: 12px; border: none; border-radius: 8px; background: var(--accent); color: #fff; font-weight: 700; font-size: 15px; cursor: pointer; font-family: inherit; }
+  #gate .err { color: var(--err); font-size: 12.5px; margin-top: 10px; min-height: 16px; }
   #app { display: none; }
   .topbar { background: var(--navy); color: #fff; padding: 14px 24px; display: flex; align-items: center; gap: 14px; }
   .topbar img.logo { height: 22px; }
   .topbar .divider { width: 1px; height: 22px; background: rgba(255,255,255,0.3); }
   .topbar h1 { font-size: 15px; margin: 0; font-weight: 500; color: #cfe0f5; }
-  .tabs { display: flex; gap: 4px; padding: 0 24px; background: #fff; border-bottom: 1px solid var(--line); }
-  .tab { padding: 12px 16px; cursor: pointer; font-weight: 600; color: var(--muted); border-bottom: 2px solid transparent; font-size: 13.5px; }
-  .tab.active { color: var(--navy); border-bottom-color: var(--accent); }
-  .content { padding: 20px 24px 60px; max-width: 1400px; margin: 0 auto; }
+
+  .tabbar { padding: 16px 24px 16px; background: #fff; border-bottom: 1px solid var(--line); }
+  .tabs { display: inline-flex; gap: 2px; background: var(--grey-bg); padding: 4px; border-radius: 10px; }
+  .tab { display: flex; align-items: center; gap: 8px; border: none; cursor: pointer; font-family: inherit; padding: 9px 16px; border-radius: 8px; font-weight: 600; font-size: 13.5px; background: transparent; color: var(--muted); }
+  .tab.active { background: #fff; color: var(--navy); box-shadow: 0 1px 2px rgba(0,0,0,0.08); }
+  .tab .count { background: var(--grey-bg); color: var(--muted); font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 999px; }
+  .tab.active .count { background: #eaf0fb; color: var(--navy); }
+
+  .content { padding: 20px 24px 60px; max-width: 1300px; margin: 0 auto; }
   .toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; gap: 10px; flex-wrap: wrap; }
-  .toolbar .count { color: var(--muted); font-size: 13px; }
-  button.refresh { background: #fff; border: 1px solid var(--line); border-radius: 7px; padding: 7px 12px; cursor: pointer; font-size: 13px; font-weight: 600; font-family: inherit; }
-  table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 10px; overflow: hidden; }
-  th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
-  th { background: var(--grey-bg); font-size: 11px; text-transform: uppercase; letter-spacing: 0.03em; color: var(--muted); font-weight: 650; }
-  tr.summary-row:hover { background: #fafbfc; }
-  td select, td input { padding: 5px 7px; border: 1px solid var(--line); border-radius: 6px; font-size: 13px; width: 100%; font-family: inherit; }
-  .badge { display: inline-block; padding: 3px 9px; border-radius: 999px; font-size: 11px; font-weight: 650; margin: 1px 3px 1px 0; }
+  .toolbar .filters { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .toolbar input[type=text], .toolbar select { padding: 9px 12px; border: 1px solid var(--line); border-radius: 8px; font-size: 13.5px; font-family: inherit; background: #fff; }
+  .toolbar input[type=text] { width: 240px; }
+  .toolbar .count-text { color: var(--muted); font-size: 13px; }
+  button.refresh { background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 8px 14px; cursor: pointer; font-size: 13px; font-weight: 600; font-family: inherit; }
+
+  .list-card { background: #fff; border-radius: 12px; overflow: hidden; border: 1px solid #e2e6ea; }
+  .list-head, .list-row-summary { display: grid; gap: 10px; padding: 11px 16px; align-items: center; }
+  .list-head { background: var(--grey-bg); font-size: 11px; text-transform: uppercase; letter-spacing: 0.03em; color: var(--muted); font-weight: 650; padding: 11px 16px; }
+  .req-cols { grid-template-columns: 90px 90px 1.3fr 1.1fr 1.1fr 130px 110px 110px 80px; }
+  .scr-cols { grid-template-columns: 120px 1.1fr 1fr 130px 1.2fr 90px; }
+  .list-row { border-top: 1px solid var(--line); }
+  .list-row-summary { padding: 14px 16px; font-size: 13px; }
+  .list-row.is-new .list-row-summary { background: #fffaf2; box-shadow: inset 3px 0 0 var(--accent); }
+  .empty-state { padding: 30px 16px; text-align: center; color: var(--muted); font-size: 13.5px; border-top: 1px solid var(--line); }
+
+  .badge { display: inline-block; padding: 3px 8px; border-radius: 999px; font-size: 10.5px; font-weight: 650; margin: 1px 3px 1px 0; }
   .badge.on { background: var(--ok-bg); color: var(--ok); }
   .badge.off { background: var(--grey-bg); color: var(--muted); }
+  .status-badge { display: inline-block; padding: 3px 9px; border-radius: 999px; font-size: 11px; font-weight: 650; }
   .status-badge.nieuw, .status-badge.beschikbaar { background: var(--ok-bg); color: var(--ok); }
   .status-badge.toegewezen, .status-badge.uitgeleend { background: var(--warn-bg); color: var(--warn); }
   .status-badge.bevestigd, .status-badge.onderweg { background: #e6eefc; color: #1d4ed8; }
   .status-badge.afgerond { background: var(--grey-bg); color: var(--muted); }
-  .status-badge.geannuleerd { background: var(--err-bg); color: var(--err); }
-  .status-badge { display: inline-block; padding: 3px 9px; border-radius: 999px; font-size: 11.5px; font-weight: 650; }
-  button.toggle-details { background: none; border: 1px solid var(--line); border-radius: 6px; padding: 5px 10px; font-size: 12px; cursor: pointer; color: var(--navy); font-weight: 600; font-family: inherit; }
+  .status-badge.geannuleerd, .status-badge.in.onderhoud { background: var(--err-bg); color: var(--err); }
+
+  button.toggle-details { background: none; border: 1px solid var(--line); border-radius: 6px; padding: 6px 10px; font-size: 12px; cursor: pointer; color: var(--navy); font-weight: 600; font-family: inherit; }
+
   .detail-row { display: none; }
-  .detail-row td { background: #fbfbfc; padding: 18px 20px; }
-  .detail-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px 20px; margin-bottom: 18px; }
+  .detail-wrap { background: var(--paper); padding: 20px 22px; border-top: 1px solid var(--line); display: flex; flex-direction: column; gap: 14px; }
+  .detail-card { background: #fff; border: 1px solid #e2e6ea; border-radius: 10px; padding: 18px 20px; border-left: 3px solid #cbd5e1; }
+  .detail-card.editable { border-color: #cfe0f7; border-left-color: var(--navy); }
+  .detail-card-title { font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); font-weight: 700; margin-bottom: 14px; }
+  .detail-card.editable .detail-card-title { color: var(--navy); }
+  .detail-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px 20px; }
   .detail-grid .full { grid-column: 1 / -1; }
   .detail-field label { display: block; font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); font-weight: 650; margin-bottom: 4px; }
-  .detail-field .static { font-size: 13.5px; }
-  .detail-section-title { font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); font-weight: 700; margin: 4px 0 10px; border-top: 1px solid var(--line); padding-top: 14px; }
-  .detail-section-title:first-child { border-top: none; padding-top: 0; }
-  .save-cell { text-align: right; white-space: nowrap; }
-  button.save { background: var(--navy); color: #fff; border: none; border-radius: 6px; padding: 7px 14px; font-size: 12.5px; font-weight: 650; cursor: pointer; font-family: inherit; }
-  button.save:disabled { background: #c9ccd1; cursor: default; }
-  button.delete { background: #fff; color: var(--err); border: 1px solid var(--err); border-radius: 6px; padding: 7px 14px; font-size: 12.5px; font-weight: 650; cursor: pointer; font-family: inherit; margin-right: 8px; }
-  button.delete:hover { background: var(--err-bg); }
-  .detail-actions { display: flex; justify-content: flex-end; align-items: center; }
-  .muted { color: var(--muted); font-size: 12.5px; }
+  .detail-field .static { font-size: 13.5px; font-weight: 500; }
+  .detail-field select, .detail-field input { width: 100%; padding: 8px 9px; border: 1px solid var(--line); border-radius: 6px; font-size: 13px; font-family: inherit; background: #fff; }
   .transport-notice { background: var(--warn-bg); color: var(--warn); border-radius: 8px; padding: 10px 14px; font-size: 12.5px; margin-bottom: 14px; line-height: 1.5; }
-  .toast { position: fixed; bottom: 20px; right: 20px; background: var(--navy); color: #fff; padding: 10px 16px; border-radius: 8px; font-size: 13px; display: none; }
+  .detail-actions { display: flex; justify-content: flex-end; align-items: center; gap: 8px; }
+  button.save { flex-shrink: 0; white-space: nowrap; background: var(--navy); color: #fff; border: none; border-radius: 6px; padding: 8px 14px; font-size: 12.5px; font-weight: 650; cursor: pointer; font-family: inherit; }
+  button.save:disabled { background: #c9ccd1; cursor: default; }
+  button.delete { flex-shrink: 0; white-space: nowrap; background: #fff; color: var(--err); border: 1px solid var(--err); border-radius: 6px; padding: 8px 14px; font-size: 12.5px; font-weight: 650; cursor: pointer; font-family: inherit; }
+  button.delete:hover { background: var(--err-bg); }
+  .toast { position: fixed; bottom: 20px; right: 20px; background: var(--navy); color: #fff; padding: 11px 18px; border-radius: 8px; font-size: 13px; display: none; }
+
+  @media (max-width: 900px) { .req-cols, .scr-cols { grid-template-columns: 1fr; } }
 </style>
 </head>
 <body>
@@ -93,44 +112,43 @@
     <h1>Demo pool beheer</h1>
   </div>
 
-  <div class="tabs">
-    <div class="tab active" data-tab="requests">Aanvragen</div>
-    <div class="tab" data-tab="screens">Schermen</div>
+  <div class="tabbar">
+    <div class="tabs">
+      <button class="tab active" data-tab="requests">Aanvragen <span class="count" id="tabReqCount">0</span></button>
+      <button class="tab" data-tab="screens">Schermen <span class="count" id="tabScrCount">0</span></button>
+    </div>
   </div>
 
   <div class="content">
 
     <div id="tab-requests">
       <div class="toolbar">
-        <span class="count" id="reqCount"></span>
+        <div class="filters">
+          <input type="text" id="reqSearch" placeholder="Zoek op klant of organisatie…">
+          <select id="reqStatusFilter"><option value="">Alle statussen</option></select>
+          <span class="count-text" id="reqCount"></span>
+        </div>
         <button class="refresh" id="reqRefresh">↻ Ververs</button>
       </div>
-      <table id="reqTable">
-        <thead>
-          <tr>
-            <th>ID</th><th>Datum</th><th>Klant</th><th>Product</th><th>Benodigd</th>
-            <th>Periode</th><th>Status</th><th>Toegewezen scherm</th><th></th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
+      <div class="list-card">
+        <div class="list-head req-cols"><div>ID</div><div>Datum</div><div>Klant</div><div>Product</div><div>Benodigd</div><div>Periode</div><div>Status</div><div>Toegewezen</div><div></div></div>
+        <div id="reqRows"></div>
+      </div>
     </div>
 
     <div id="tab-screens" style="display:none;">
       <div class="toolbar">
-        <span class="count" id="scrCount"></span>
+        <div class="filters">
+          <input type="text" id="scrSearch" placeholder="Zoek op model, serienr. of locatie…">
+          <select id="scrStatusFilter"><option value="">Alle statussen</option></select>
+          <span class="count-text" id="scrCount"></span>
+        </div>
         <button class="refresh" id="scrRefresh">↻ Ververs</button>
       </div>
-      <table id="scrTable">
-        <thead>
-          <tr>
-            <th>ID</th><th>Model</th><th>Serienr.</th><th>Status</th><th>Locatie</th>
-            <th>Verantw.</th><th>Uit</th><th>Terug verw.</th><th>Firmware</th>
-            <th>Accessoires</th><th>Staat</th><th>Notities</th><th></th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
+      <div class="list-card">
+        <div class="list-head scr-cols"><div>ID</div><div>Model</div><div>Serienr.</div><div>Status</div><div>Locatie</div><div></div></div>
+        <div id="scrRows"></div>
+      </div>
     </div>
 
   </div>
@@ -144,9 +162,25 @@
 
   const REQUEST_STATUSSEN = ['nieuw', 'toegewezen', 'bevestigd', 'afgerond', 'geannuleerd'];
   const SCREEN_STATUSSEN = ['beschikbaar', 'uitgeleend', 'onderweg', 'in onderhoud'];
+  const TRANSPORT_NOTES = {
+    'Legamaster Netherlands': ['Zelf uitrijden (goedkoper).'],
+    'Legamaster Germany': ['Meestal zelf uitrijden.', 'Transportkosten altijd bij LMGmbH plaatsen — doorgeven aan Logistiek.'],
+    'Legamaster France': ['Overweeg knockdown-verzending (scherm in box, onderstel los op pallet) — in overleg met sales.'],
+    'Legamaster Nordics': ['Overweeg knockdown-verzending (scherm in box, onderstel los op pallet) — in overleg met sales.']
+  };
+  const MONTHS_NL = ['jan', 'feb', 'mrt', 'apr', 'mei', 'jun', 'jul', 'aug', 'sep', 'okt', 'nov', 'dec'];
+  function fmtDate(iso) {
+    if (!iso) return '';
+    const d = new Date(iso + 'T00:00:00');
+    if (isNaN(d)) return iso;
+    return d.getDate() + ' ' + MONTHS_NL[d.getMonth()];
+  }
 
   let PASSWORD = '';
   let LATEST_REQUESTS = [];
+  let LATEST_SCREENS = [];
+  let OPEN_REQUEST_IDS = new Set();
+  let OPEN_SCREEN_IDS = new Set();
 
   // ---- Login ----
   const gate = document.getElementById('gate');
@@ -207,6 +241,10 @@
   }
   function badge(label, on) { return '<span class="badge ' + (on === 'Ja' || on === true ? 'on' : 'off') + '">' + label + '</span>'; }
 
+  // populate status filter dropdowns once
+  document.getElementById('reqStatusFilter').innerHTML += REQUEST_STATUSSEN.map(s => '<option value="' + s + '">' + s + '</option>').join('');
+  document.getElementById('scrStatusFilter').innerHTML += SCREEN_STATUSSEN.map(s => '<option value="' + s + '">' + s + '</option>').join('');
+
   // ---- Requests ----
   function loadRequests() {
     fetch(APPS_SCRIPT_URL + '?action=getRequests&password=' + encodeURIComponent(PASSWORD))
@@ -216,58 +254,69 @@
 
   function renderRequests(requests) {
     LATEST_REQUESTS = requests;
-    document.getElementById('reqCount').textContent = requests.length + ' aanvra' + (requests.length === 1 ? 'ag' : 'gen');
-    const tbody = document.querySelector('#reqTable tbody');
-    tbody.innerHTML = '';
-    requests.slice().reverse().forEach(req => {
+    document.getElementById('tabReqCount').textContent = requests.length;
+    applyRequestFilters();
+  }
+
+  function applyRequestFilters() {
+    const q = document.getElementById('reqSearch').value.trim().toLowerCase();
+    const statusFilter = document.getElementById('reqStatusFilter').value;
+    const filtered = LATEST_REQUESTS.filter(r => {
+      const matchesQ = !q || (r.shipCompanyName || '').toLowerCase().includes(q) || (r.organisation || '').toLowerCase().includes(q);
+      const matchesStatus = !statusFilter || r.status === statusFilter;
+      return matchesQ && matchesStatus;
+    });
+    document.getElementById('reqCount').textContent = filtered.length + ' van ' + LATEST_REQUESTS.length + ' aanvra' + (LATEST_REQUESTS.length === 1 ? 'ag' : 'gen');
+    renderRequestRows(filtered.slice().reverse());
+  }
+
+  function renderRequestRows(requests) {
+    const container = document.getElementById('reqRows');
+    container.innerHTML = '';
+    if (!requests.length) {
+      container.innerHTML = '<div class="empty-state">Geen aanvragen gevonden voor deze zoekopdracht/filter.</div>';
+      return;
+    }
+    requests.forEach(req => {
       const id = req.requestID;
-
-      const summary = document.createElement('tr');
-      summary.className = 'summary-row';
-      summary.innerHTML =
-        '<td>' + id + '</td>' +
-        '<td>' + esc(req.timestamp) + '</td>' +
-        '<td><strong>' + esc(req.shipCompanyName) + '</strong><br><span class="muted">' + esc(req.organisation) + '</span></td>' +
-        '<td>' + esc(req.demoProduct) + '</td>' +
-        '<td>' + badge('Air', req.airServerNodig) + badge('PC', req.demoPCNodig) + badge('Nav', req.navigatorNodig) + badge('Cam', req.cameraNodig) + '</td>' +
-        '<td>' + esc(req.dateArrive) + ' →<br>' + esc(req.datePickup) + '</td>' +
-        '<td><span class="status-badge ' + esc(req.status) + '">' + esc(req.status) + '</span></td>' +
-        '<td>' + esc(req.toegewezenScreenID || '—') + '</td>' +
-        '<td class="save-cell"><button class="toggle-details" data-id="' + id + '">Details</button></td>';
-      tbody.appendChild(summary);
-
-      const detail = document.createElement('tr');
-      detail.className = 'detail-row';
-      detail.id = 'detail-' + id;
-      const cell = document.createElement('td');
-      cell.colSpan = 9;
-      cell.innerHTML = requestDetailHtml(req);
-      detail.appendChild(cell);
-      tbody.appendChild(detail);
+      const row = document.createElement('div');
+      row.className = 'list-row' + (req.status === 'nieuw' ? ' is-new' : '');
+      row.innerHTML =
+        '<div class="list-row-summary req-cols">' +
+          '<div style="font-weight:600;">' + id + '</div>' +
+          '<div style="color:var(--muted);">' + fmtDate(req.timestamp) + '</div>' +
+          '<div><strong>' + esc(req.shipCompanyName) + '</strong><br><span style="color:var(--muted);font-size:12px;">' + esc(req.organisation) + '</span></div>' +
+          '<div>' + esc(req.demoProduct) + '</div>' +
+          '<div>' + badge('Air', req.airServerNodig) + badge('PC', req.demoPCNodig) + badge('Nav', req.navigatorNodig) + badge('Cam', req.cameraNodig) + '</div>' +
+          '<div style="white-space:nowrap;font-size:12.5px;">' + fmtDate(req.dateArrive) + ' → ' + fmtDate(req.datePickup) + '</div>' +
+          '<div><span class="status-badge ' + esc(req.status) + '">' + esc(req.status) + '</span></div>' +
+          '<div style="font-size:12.5px;">' + esc(req.toegewezenScreenID || '—') + '</div>' +
+          '<div style="text-align:right;"><button class="toggle-details" data-id="' + id + '">' + (OPEN_REQUEST_IDS.has(id) ? 'Verberg' : 'Details') + '</button></div>' +
+        '</div>' +
+        '<div class="detail-row" id="detail-' + id + '" style="' + (OPEN_REQUEST_IDS.has(id) ? 'display:table-row;' : '') + '"></div>';
+      container.appendChild(row);
+      const detailHost = row.querySelector('#detail-' + id);
+      detailHost.style.display = OPEN_REQUEST_IDS.has(id) ? 'block' : 'none';
+      detailHost.innerHTML = requestDetailHtml(req);
     });
 
-    tbody.querySelectorAll('button.toggle-details').forEach(btn => {
+    container.querySelectorAll('button.toggle-details').forEach(btn => {
       btn.addEventListener('click', () => {
-        const row = document.getElementById('detail-' + btn.dataset.id);
-        const open = row.style.display === 'table-row';
-        row.style.display = open ? 'none' : 'table-row';
+        const id = btn.dataset.id;
+        const row = document.getElementById('detail-' + id);
+        const open = row.style.display === 'block';
+        row.style.display = open ? 'none' : 'block';
         btn.textContent = open ? 'Details' : 'Verberg';
+        if (open) OPEN_REQUEST_IDS.delete(id); else OPEN_REQUEST_IDS.add(id);
       });
     });
-    tbody.querySelectorAll('button.save-request').forEach(btn => {
+    container.querySelectorAll('button.save-request').forEach(btn => {
       btn.addEventListener('click', () => saveRequest(btn.dataset.id, btn));
     });
-    tbody.querySelectorAll('button.delete-request').forEach(btn => {
+    container.querySelectorAll('button.delete-request').forEach(btn => {
       btn.addEventListener('click', () => deleteRequestConfirm(btn.dataset.id, btn));
     });
   }
-
-  const TRANSPORT_NOTES = {
-    'Legamaster Netherlands': ['Zelf uitrijden (goedkoper).'],
-    'Legamaster Germany': ['Meestal zelf uitrijden.', 'Transportkosten altijd bij LMGmbH plaatsen — doorgeven aan Logistiek.'],
-    'Legamaster France': ['Overweeg knockdown-verzending (scherm in box, onderstel los op pallet) — in overleg met sales.'],
-    'Legamaster Nordics': ['Overweeg knockdown-verzending (scherm in box, onderstel los op pallet) — in overleg met sales.']
-  };
 
   function transportNoticeHtml(organisation) {
     const notes = TRANSPORT_NOTES[organisation];
@@ -280,44 +329,39 @@
     function field(label, value) {
       return '<div class="detail-field"><label>' + label + '</label><div class="static">' + (esc(value) || '—') + '</div></div>';
     }
-    return '' +
-      '<div class="detail-section-title">Aanvrager</div>' +
-      '<div class="detail-grid">' +
+    return '<div class="detail-wrap">' +
+
+      '<div class="detail-card"><div class="detail-card-title">Aanvrager</div><div class="detail-grid">' +
         field('Aangevraagd door', req.requestBy) +
         field('Verantwoordelijke sales', req.responsibleSalesTeamMember) +
         field('Reseller', req.legamasterReseller) +
         field('Sales potentieel (units)', req.salesPotentialUnits) +
-        '<div class="detail-field full">' + field('Reden voor demo', req.reasonForDemo) + '</div>' +
-      '</div>' +
+        '<div class="full">' + field('Reden voor demo', req.reasonForDemo) + '</div>' +
+      '</div></div>' +
 
-      '<div class="detail-section-title">Afleveradres</div>' +
-      '<div class="detail-grid">' +
+      '<div class="detail-card"><div class="detail-card-title">Afleveradres</div><div class="detail-grid">' +
         field('Bedrijf', req.shipCompanyName) +
         field('Contactpersoon', req.shipContactPerson) +
         field('Telefoon', req.shipPhone) +
         field('Straat + nr.', req.shipStreet) +
         field('Postcode + plaats', req.shipPostalCity) +
         field('Land', req.shipCountry) +
-        '<div class="detail-field full">' + field('Bijzonderheden bezorging', req.shipSpecialDeliveryInfo) + '</div>' +
-      '</div>' +
+        '<div class="full">' + field('Bijzonderheden bezorging', req.shipSpecialDeliveryInfo) + '</div>' +
+        '<div class="full">' + field('Opmerkingen sales', req.remarks) + '</div>' +
+      '</div></div>' +
 
-      '<div class="detail-section-title full">Opmerkingen sales</div>' +
-      '<div class="detail-grid"><div class="detail-field full">' + field('', req.remarks) + '</div></div>' +
-
-      '<div class="detail-section-title">Gewenst demo product</div>' +
-      '<div class="detail-grid">' +
+      '<div class="detail-card"><div class="detail-card-title">Gewenst demo product</div><div class="detail-grid">' +
         field('Demo product', req.demoProduct) +
         field('Onderstel', req.mountType) +
-      '</div>' +
+      '</div></div>' +
 
-      '<div class="detail-section-title">Beheer — Bram / Tom</div>' +
-      '<div class="detail-grid">' +
+      '<div class="detail-card editable"><div class="detail-card-title">Beheer — Bram / Tom</div><div class="detail-grid">' +
         '<div class="detail-field"><label>Status</label>' + selectHtml('st-' + id, REQUEST_STATUSSEN, req.status) + '</div>' +
         '<div class="detail-field"><label>Toegewezen Screen ID</label><input type="text" id="scr-' + id + '" value="' + esc(req.toegewezenScreenID) + '" placeholder="bv. EVP-6500-01"></div>' +
         '<div class="detail-field full"><label>Notities Bram</label><input type="text" id="nt-' + id + '" value="' + esc(req.notitiesBram) + '"></div>' +
-      '</div>' +
+      '</div></div>' +
 
-      '<div class="detail-section-title">Transport <span class="muted" style="text-transform:none;font-weight:400;">— alleen invullen bij transport door derden</span></div>' +
+      '<div class="detail-card editable"><div class="detail-card-title">Transport <span style="text-transform:none;font-weight:400;color:var(--muted);">— alleen invullen bij transport door derden</span></div>' +
       transportNoticeHtml(req.organisation) +
       '<div class="detail-grid">' +
         '<div class="detail-field"><label>Aantal colli/pallets</label><input type="text" id="tc-' + id + '" value="' + esc(req.transportColli) + '"></div>' +
@@ -325,19 +369,19 @@
         '<div class="detail-field"><label>Omschrijving 2</label><input type="text" id="td2-' + id + '" value="' + esc(req.transportDesc2) + '"></div>' +
         '<div class="detail-field"><label>Omschrijving 3</label><input type="text" id="td3-' + id + '" value="' + esc(req.transportDesc3) + '"></div>' +
         '<div class="detail-field"><label>Omschrijving 4</label><input type="text" id="td4-' + id + '" value="' + esc(req.transportDesc4) + '"></div>' +
-      '</div>' +
+      '</div></div>' +
 
-      '<div class="detail-section-title">Laadadres <span class="muted" style="text-transform:none;font-weight:400;">— standaard Legamaster International, alleen wijzigen bij afwijkend transport</span></div>' +
-      '<div class="detail-grid">' +
+      '<div class="detail-card editable"><div class="detail-card-title">Laadadres <span style="text-transform:none;font-weight:400;color:var(--muted);">— standaard Legamaster International, alleen wijzigen bij afwijkend transport</span></div><div class="detail-grid">' +
         '<div class="detail-field"><label>Bedrijf</label><input type="text" id="lc-' + id + '" value="' + esc(req.loadingCompanyName) + '"></div>' +
         '<div class="detail-field"><label>Contactpersoon</label><input type="text" id="lp-' + id + '" value="' + esc(req.loadingContactPerson) + '"></div>' +
         '<div class="detail-field"><label>Telefoon</label><input type="text" id="lph-' + id + '" value="' + esc(req.loadingPhone) + '"></div>' +
         '<div class="detail-field"><label>Straat + nr.</label><input type="text" id="lst-' + id + '" value="' + esc(req.loadingStreet) + '"></div>' +
         '<div class="detail-field"><label>Postcode + plaats</label><input type="text" id="lpc-' + id + '" value="' + esc(req.loadingPostalCity) + '"></div>' +
         '<div class="detail-field"><label>Land</label><input type="text" id="lco-' + id + '" value="' + esc(req.loadingCountry) + '"></div>' +
-      '</div>' +
+      '</div></div>' +
 
-      '<div class="detail-actions"><button class="delete delete-request" data-id="' + id + '">Aanvraag verwijderen</button><button class="save save-request" data-id="' + id + '">Wijzigingen opslaan</button></div>';
+      '<div class="detail-actions"><button class="delete delete-request" data-id="' + id + '">Aanvraag verwijderen</button><button class="save save-request" data-id="' + id + '">Wijzigingen opslaan</button></div>' +
+    '</div>';
   }
 
   function deleteRequestConfirm(id, btn) {
@@ -350,7 +394,7 @@
     })
       .then(r => r.json())
       .then(data => {
-        if (data.ok) { toast('Aanvraag verwijderd'); loadRequests(); }
+        if (data.ok) { toast('Aanvraag verwijderd'); OPEN_REQUEST_IDS.delete(id); loadRequests(); }
         else { toast('Mislukt: ' + data.error); btn.disabled = false; btn.textContent = 'Aanvraag verwijderen'; }
       })
       .catch(() => { toast('Mislukt: kan niet verbinden'); btn.disabled = false; btn.textContent = 'Aanvraag verwijderen'; });
@@ -379,9 +423,12 @@
     };
     fetch(APPS_SCRIPT_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload) })
       .then(r => r.json())
-      .then(data => { toast(data.ok ? 'Aanvraag bijgewerkt' : 'Mislukt: ' + data.error); if (data.ok) loadRequests(); })
+      .then(data => { toast(data.ok ? 'Aanvraag bijgewerkt' : 'Mislukt: ' + data.error); if (data.ok) { OPEN_REQUEST_IDS.add(id); loadRequests(); } })
       .finally(() => { btn.disabled = false; btn.textContent = 'Wijzigingen opslaan'; });
   }
+
+  document.getElementById('reqSearch').addEventListener('input', applyRequestFilters);
+  document.getElementById('reqStatusFilter').addEventListener('change', applyRequestFilters);
 
   // ---- Screens ----
   function loadScreens() {
@@ -391,35 +438,83 @@
   }
 
   function renderScreens(screens) {
-    document.getElementById('scrCount').textContent = screens.length + ' scherm' + (screens.length === 1 ? '' : 'en');
-    const tbody = document.querySelector('#scrTable tbody');
-    tbody.innerHTML = '';
+    LATEST_SCREENS = screens;
+    document.getElementById('tabScrCount').textContent = screens.length;
+    applyScreenFilters();
+  }
+
+  function applyScreenFilters() {
+    const q = document.getElementById('scrSearch').value.trim().toLowerCase();
+    const statusFilter = document.getElementById('scrStatusFilter').value;
+    const filtered = LATEST_SCREENS.filter(sc => {
+      const matchesQ = !q || (sc.model || '').toLowerCase().includes(q) || (sc.locatie || '').toLowerCase().includes(q) || (sc.serienummer || '').toLowerCase().includes(q);
+      const matchesStatus = !statusFilter || sc.status === statusFilter;
+      return matchesQ && matchesStatus;
+    });
+    document.getElementById('scrCount').textContent = filtered.length + ' van ' + LATEST_SCREENS.length + ' scherm' + (LATEST_SCREENS.length === 1 ? '' : 'en');
+    renderScreenRows(filtered);
+  }
+
+  function renderScreenRows(screens) {
+    const container = document.getElementById('scrRows');
+    container.innerHTML = '';
+    if (!screens.length) {
+      container.innerHTML = '<div class="empty-state">Geen schermen gevonden voor deze zoekopdracht/filter.</div>';
+      return;
+    }
     screens.forEach(scr => {
       const id = scr.screenID;
-      const tr = document.createElement('tr');
-      tr.innerHTML =
-        '<td>' + id + '</td>' +
-        '<td>' + esc(scr.model) + '</td>' +
-        '<td>' + esc(scr.serienummer) + '</td>' +
-        '<td>' + selectHtml('scst-' + id, SCREEN_STATUSSEN, scr.status) + '</td>' +
-        '<td><input type="text" id="scloc-' + id + '" value="' + esc(scr.locatie) + '"></td>' +
-        '<td><input type="text" id="scver-' + id + '" value="' + esc(scr.verantwoordelijke) + '"></td>' +
-        '<td><input type="date" id="scuit-' + id + '" value="' + esc(scr.uitleendatum) + '"></td>' +
-        '<td><input type="date" id="scterug-' + id + '" value="' + esc(scr.verwachteTerugkomst) + '"></td>' +
-        '<td><input type="text" id="scfw-' + id + '" value="' + esc(scr.firmwareVersie) + '"></td>' +
-        '<td><input type="text" id="scacc-' + id + '" value="' + esc(scr.accessoires) + '" placeholder="AirServer, camera, ..."></td>' +
-        '<td><input type="text" id="scstaat-' + id + '" value="' + esc(scr.staatScherm) + '"></td>' +
-        '<td><input type="text" id="scnot-' + id + '" value="' + esc(scr.notities) + '"></td>' +
-        '<td class="save-cell"><button class="save" data-id="' + id + '">Opslaan</button></td>';
-      tbody.appendChild(tr);
+      const row = document.createElement('div');
+      row.className = 'list-row';
+      row.innerHTML =
+        '<div class="list-row-summary scr-cols">' +
+          '<div style="font-weight:600;">' + id + '</div>' +
+          '<div>' + esc(scr.model) + '</div>' +
+          '<div style="color:var(--muted);">' + esc(scr.serienummer) + '</div>' +
+          '<div><span class="status-badge ' + esc(scr.status) + '">' + esc(scr.status) + '</span></div>' +
+          '<div>' + esc(scr.locatie || '—') + '</div>' +
+          '<div style="text-align:right;"><button class="toggle-details" data-id="' + id + '">' + (OPEN_SCREEN_IDS.has(id) ? 'Verberg' : 'Details') + '</button></div>' +
+        '</div>' +
+        '<div class="detail-row" id="sdetail-' + id + '" style="' + (OPEN_SCREEN_IDS.has(id) ? 'display:block;' : '') + '"></div>';
+      container.appendChild(row);
+      const detailHost = row.querySelector('#sdetail-' + id);
+      detailHost.style.display = OPEN_SCREEN_IDS.has(id) ? 'block' : 'none';
+      detailHost.innerHTML = screenDetailHtml(scr);
     });
-    tbody.querySelectorAll('button.save').forEach(btn => {
+
+    container.querySelectorAll('button.toggle-details').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.dataset.id;
+        const row = document.getElementById('sdetail-' + id);
+        const open = row.style.display === 'block';
+        row.style.display = open ? 'none' : 'block';
+        btn.textContent = open ? 'Details' : 'Verberg';
+        if (open) OPEN_SCREEN_IDS.delete(id); else OPEN_SCREEN_IDS.add(id);
+      });
+    });
+    container.querySelectorAll('button.save-screen').forEach(btn => {
       btn.addEventListener('click', () => saveScreen(btn.dataset.id, btn));
     });
   }
 
+  function screenDetailHtml(scr) {
+    const id = scr.screenID;
+    return '<div class="detail-wrap"><div class="detail-card editable"><div class="detail-grid">' +
+      '<div class="detail-field"><label>Status</label>' + selectHtml('scst-' + id, SCREEN_STATUSSEN, scr.status) + '</div>' +
+      '<div class="detail-field"><label>Locatie</label><input type="text" id="scloc-' + id + '" value="' + esc(scr.locatie) + '"></div>' +
+      '<div class="detail-field"><label>Verantwoordelijke</label><input type="text" id="scver-' + id + '" value="' + esc(scr.verantwoordelijke) + '" placeholder="Niet toegewezen"></div>' +
+      '<div class="detail-field"><label>Uitleendatum</label><input type="date" id="scuit-' + id + '" value="' + esc(scr.uitleendatum) + '"></div>' +
+      '<div class="detail-field"><label>Verwacht terug</label><input type="date" id="scterug-' + id + '" value="' + esc(scr.verwachteTerugkomst) + '"></div>' +
+      '<div class="detail-field"><label>Firmware</label><input type="text" id="scfw-' + id + '" value="' + esc(scr.firmwareVersie) + '"></div>' +
+      '<div class="detail-field full"><label>Accessoires</label><input type="text" id="scacc-' + id + '" value="' + esc(scr.accessoires) + '" placeholder="AirServer, camera, ..."></div>' +
+      '<div class="detail-field"><label>Staat scherm</label><input type="text" id="scstaat-' + id + '" value="' + esc(scr.staatScherm) + '"></div>' +
+      '<div class="detail-field full"><label>Notities</label><input type="text" id="scnot-' + id + '" value="' + esc(scr.notities) + '"></div>' +
+    '</div></div>' +
+    '<div class="detail-actions"><button class="save save-screen" data-id="' + id + '">Wijzigingen opslaan</button></div></div>';
+  }
+
   function saveScreen(id, btn) {
-    btn.disabled = true; btn.textContent = '…';
+    btn.disabled = true; btn.textContent = 'Opslaan…';
     const payload = {
       action: 'updateScreen',
       password: PASSWORD,
@@ -436,13 +531,17 @@
     };
     fetch(APPS_SCRIPT_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload) })
       .then(r => r.json())
-      .then(data => { toast(data.ok ? 'Scherm bijgewerkt' : 'Mislukt: ' + data.error); })
-      .finally(() => { btn.disabled = false; btn.textContent = 'Opslaan'; });
+      .then(data => { toast(data.ok ? 'Scherm bijgewerkt' : 'Mislukt: ' + data.error); if (data.ok) { OPEN_SCREEN_IDS.add(id); loadScreens(); } })
+      .finally(() => { btn.disabled = false; btn.textContent = 'Wijzigingen opslaan'; });
   }
+
+  document.getElementById('scrSearch').addEventListener('input', applyScreenFilters);
+  document.getElementById('scrStatusFilter').addEventListener('change', applyScreenFilters);
 
   document.getElementById('reqRefresh').addEventListener('click', loadRequests);
   document.getElementById('scrRefresh').addEventListener('click', loadScreens);
 </script>
 
-</body>
-</html>
+
+
+</body></html>
