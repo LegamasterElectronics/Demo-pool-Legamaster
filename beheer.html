@@ -63,6 +63,8 @@
   .list-head { background: var(--grey-bg); font-size: 11px; text-transform: uppercase; letter-spacing: 0.03em; color: var(--muted); font-weight: 650; padding: 11px 16px; }
   .req-cols { grid-template-columns: 110px 90px 1.3fr 1.1fr 1.1fr 130px 110px 110px 80px; }
   .scr-cols { grid-template-columns: 150px 1fr 1fr 130px 1.2fr 90px; }
+  .loc-cols { grid-template-columns: 150px 1fr 1.2fr 110px 130px 1.4fr; }
+  .res-cols { grid-template-columns: 150px 1fr 1.1fr 200px 120px 130px 1.2fr 90px; }
   .list-row-summary > div { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .list-row { border-top: 1px solid var(--line); }
   .list-row-summary { padding: 14px 16px; font-size: 13px; }
@@ -78,6 +80,8 @@
   .status-badge.bevestigd, .status-badge.onderweg { background: #e6eefc; color: #1d4ed8; }
   .status-badge.afgerond { background: var(--grey-bg); color: var(--muted); }
   .status-badge.geannuleerd, .status-badge.in.onderhoud { background: var(--err-bg); color: var(--err); }
+  .status-badge.wachtend { background: var(--warn-bg); color: var(--warn); }
+  .status-badge.gereed { background: var(--ok-bg); color: var(--ok); }
 
   button.toggle-details { background: none; border: 1px solid var(--line); border-radius: 6px; padding: 6px 10px; font-size: 12px; cursor: pointer; color: var(--navy); font-weight: 600; font-family: inherit; }
 
@@ -100,7 +104,9 @@
   button.delete:hover { background: var(--err-bg); }
   .toast { position: fixed; bottom: 20px; right: 20px; background: var(--navy); color: #fff; padding: 11px 18px; border-radius: 8px; font-size: 13px; display: none; }
 
-  @media (max-width: 900px) { .req-cols, .scr-cols { grid-template-columns: 1fr; } }
+  .reservation-flag { display: inline-flex; align-items: center; gap: 5px; background: #fff4d9; color: #9a6a00; border-radius: 999px; padding: 3px 10px; font-size: 11px; font-weight: 650; }
+
+  @media (max-width: 900px) { .req-cols, .scr-cols, .loc-cols, .res-cols { grid-template-columns: 1fr; } }
 </style>
 </head>
 <body>
@@ -127,6 +133,8 @@
     <div class="tabs">
       <button class="tab active" data-tab="requests">Aanvragen <span class="count" id="tabReqCount">0</span></button>
       <button class="tab" data-tab="screens">Schermen <span class="count" id="tabScrCount">0</span></button>
+      <button class="tab" data-tab="oplocatie">Op locatie <span class="count" id="tabLocCount">0</span></button>
+      <button class="tab" data-tab="reserveringen">Reserveringen <span class="count" id="tabResCount">0</span></button>
     </div>
   </div>
 
@@ -196,6 +204,77 @@
       </div>
     </div>
 
+    <div id="tab-oplocatie" style="display:none;">
+      <div class="toolbar">
+        <div class="filters">
+          <span class="count-text" id="locCount"></span>
+        </div>
+        <button class="refresh" id="locRefresh">↻ Ververs</button>
+      </div>
+      <div class="list-card">
+        <div class="list-head loc-cols"><div>ID</div><div>Model</div><div>Klant</div><div>Sinds</div><div>Verwacht terug</div><div>Reservering</div></div>
+        <div id="locRows"></div>
+      </div>
+    </div>
+
+    <div id="tab-reserveringen" style="display:none;">
+      <div class="toolbar">
+        <div class="filters">
+          <select id="resStatusFilter"><option value="">Alle statussen</option></select>
+          <span class="count-text" id="resCount"></span>
+        </div>
+        <div style="display:flex; gap:8px;">
+          <button class="add-screen-btn" id="addResToggle">+ Nieuwe reservering</button>
+          <button class="refresh" id="resRefresh">↻ Ververs</button>
+        </div>
+      </div>
+
+      <div class="add-screen-card" id="addResCard" style="display:none;">
+        <div class="add-screen-grid">
+          <div>
+            <label>ScreenID *</label>
+            <select id="newResScreenID"></select>
+          </div>
+          <div>
+            <label>Klant / bedrijf *</label>
+            <input type="text" id="newResCompany" placeholder="bv. Acme BV">
+          </div>
+          <div>
+            <label>Contactpersoon</label>
+            <input type="text" id="newResContact" placeholder="optioneel">
+          </div>
+          <div>
+            <label>Gekoppelde aanvraag</label>
+            <input type="text" id="newResRequestId" placeholder="bv. REQ-20260821-001">
+          </div>
+          <div>
+            <label>Gewenst vanaf</label>
+            <input type="date" id="newResFrom">
+          </div>
+        </div>
+        <div class="add-screen-grid" style="margin-top:12px;">
+          <div>
+            <label>Gewenst tot</label>
+            <input type="date" id="newResTo">
+          </div>
+          <div style="grid-column: span 4;">
+            <label>Notities <span style="text-transform:none;font-weight:400;">(bv. welke OPS-licentie/config al op dit scherm staat)</span></label>
+            <input type="text" id="newResNotes" placeholder="optioneel">
+          </div>
+        </div>
+        <div class="add-screen-actions">
+          <span class="add-screen-err" id="addResErr"></span>
+          <button class="cancel" id="addResCancel">Annuleren</button>
+          <button class="save" id="addResSubmit">Reserveren</button>
+        </div>
+      </div>
+
+      <div class="list-card">
+        <div class="list-head res-cols"><div>ScreenID</div><div>Model</div><div>Klant</div><div>Periode</div><div>Status</div><div>Aanvraag</div><div>Notities</div><div></div></div>
+        <div id="resRows"></div>
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -207,6 +286,7 @@
 
   const REQUEST_STATUSSEN = ['nieuw', 'toegewezen', 'bevestigd', 'afgerond', 'geannuleerd'];
   const SCREEN_STATUSSEN = ['beschikbaar', 'uitgeleend', 'onderweg', 'in onderhoud'];
+  const RESERVATION_STATUSSEN = ['wachtend', 'gereed', 'afgerond', 'geannuleerd'];
   const TRANSPORT_NOTES = {
     'Legamaster Netherlands': ['Zelf uitrijden (goedkoper).'],
     'Legamaster Germany': ['Meestal zelf uitrijden.', 'Transportkosten altijd bij LMGmbH plaatsen — doorgeven aan Logistiek.'],
@@ -224,6 +304,7 @@
   let PASSWORD = '';
   let LATEST_REQUESTS = [];
   let LATEST_SCREENS = [];
+  let LATEST_RESERVATIONS = [];
   let OPEN_REQUEST_IDS = new Set();
   let OPEN_SCREEN_IDS = new Set();
 
@@ -267,6 +348,10 @@
       tab.classList.add('active');
       document.getElementById('tab-requests').style.display = tab.dataset.tab === 'requests' ? 'block' : 'none';
       document.getElementById('tab-screens').style.display = tab.dataset.tab === 'screens' ? 'block' : 'none';
+      document.getElementById('tab-oplocatie').style.display = tab.dataset.tab === 'oplocatie' ? 'block' : 'none';
+      document.getElementById('tab-reserveringen').style.display = tab.dataset.tab === 'reserveringen' ? 'block' : 'none';
+      if (tab.dataset.tab === 'oplocatie') renderOpLocatie();
+      if (tab.dataset.tab === 'reserveringen') loadReservations();
     });
   });
 
@@ -567,11 +652,12 @@
 
   function saveScreen(id, btn) {
     btn.disabled = true; btn.textContent = 'Opslaan…';
+    const newStatus = document.getElementById('scst-' + id).value;
     const payload = {
       action: 'updateScreen',
       password: PASSWORD,
       screenId: id,
-      status: document.getElementById('scst-' + id).value,
+      status: newStatus,
       locatie: document.getElementById('scloc-' + id).value,
       verantwoordelijke: document.getElementById('scver-' + id).value,
       uitleendatum: document.getElementById('scuit-' + id).value,
@@ -583,9 +669,217 @@
     };
     fetch(APPS_SCRIPT_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload) })
       .then(r => r.json())
-      .then(data => { toast(data.ok ? 'Scherm bijgewerkt' : 'Mislukt: ' + data.error); if (data.ok) { OPEN_SCREEN_IDS.add(id); loadScreens(); } })
+      .then(data => {
+        toast(data.ok ? 'Scherm bijgewerkt' : 'Mislukt: ' + data.error);
+        if (data.ok) {
+          OPEN_SCREEN_IDS.add(id);
+          loadScreens();
+          if (newStatus === 'beschikbaar') checkReservationOnReturn_(id);
+        }
+      })
       .finally(() => { btn.disabled = false; btn.textContent = 'Wijzigingen opslaan'; });
   }
+
+  // Als een scherm net op "beschikbaar" is gezet, checken of het gereserveerd
+  // stond voor een volgende klant — dan mag het niet zomaar los toegewezen worden.
+  function checkReservationOnReturn_(screenId) {
+    fetch(APPS_SCRIPT_URL + '?action=getReservations&password=' + encodeURIComponent(PASSWORD))
+      .then(r => r.json())
+      .then(data => {
+        if (!data.ok) return;
+        const match = data.reservations.find(r => String(r.screenID) === String(screenId) && (r.status === 'gereed' || r.status === 'wachtend'));
+        if (match) {
+          alert('Let op: scherm ' + screenId + ' is gereserveerd voor ' + match.reservedForCompany + '.\nNiet los toewijzen — check het tabblad Reserveringen.');
+        }
+      })
+      .catch(() => {});
+  }
+
+  // ---- Op locatie ----
+  function renderOpLocatie() {
+    Promise.all([
+      fetch(APPS_SCRIPT_URL + '?action=getScreens&password=' + encodeURIComponent(PASSWORD)).then(r => r.json()),
+      fetch(APPS_SCRIPT_URL + '?action=getReservations&password=' + encodeURIComponent(PASSWORD)).then(r => r.json())
+    ]).then(([screensData, resData]) => {
+      if (screensData.ok) LATEST_SCREENS = screensData.screens;
+      if (resData.ok) LATEST_RESERVATIONS = resData.reservations;
+      const onLocation = LATEST_SCREENS.filter(sc => sc.status === 'uitgeleend' || sc.status === 'onderweg');
+      document.getElementById('tabLocCount').textContent = onLocation.length;
+      document.getElementById('locCount').textContent = onLocation.length + ' scherm' + (onLocation.length === 1 ? '' : 'en') + ' op locatie';
+      renderLocRows(onLocation);
+    });
+  }
+
+  function renderLocRows(screens) {
+    const container = document.getElementById('locRows');
+    container.innerHTML = '';
+    if (!screens.length) {
+      container.innerHTML = '<div class="empty-state">Geen schermen op dit moment op locatie.</div>';
+      return;
+    }
+    screens.slice().sort((a, b) => sv(a.verwachteTerugkomst).localeCompare(sv(b.verwachteTerugkomst))).forEach(scr => {
+      const id = scr.screenID;
+      const reservation = LATEST_RESERVATIONS.find(r => String(r.screenID) === String(id) && (r.status === 'wachtend' || r.status === 'gereed'));
+      const row = document.createElement('div');
+      row.className = 'list-row';
+      row.innerHTML =
+        '<div class="list-row-summary loc-cols">' +
+          '<div style="font-weight:600;" title="' + esc(id) + '">' + id + '</div>' +
+          '<div title="' + esc(scr.model) + '">' + esc(scr.model) + '</div>' +
+          '<div title="' + esc(scr.locatie || '') + '"><strong>' + esc(scr.locatie || '—') + '</strong>' + (scr.verantwoordelijke ? '<br><span style="color:var(--muted);font-size:12px;">' + esc(scr.verantwoordelijke) + '</span>' : '') + '</div>' +
+          '<div style="color:var(--muted);">' + fmtDate(scr.uitleendatum) + '</div>' +
+          '<div>' + fmtDate(scr.verwachteTerugkomst) + '</div>' +
+          '<div>' + (reservation ? '<span class="reservation-flag">→ ' + esc(reservation.reservedForCompany) + '</span>' : '<span style="color:var(--muted);">—</span>') + '</div>' +
+        '</div>';
+      container.appendChild(row);
+    });
+  }
+
+  document.getElementById('locRefresh').addEventListener('click', renderOpLocatie);
+
+  // ---- Reserveringen ----
+  function loadReservations() {
+    const screensPromise = LATEST_SCREENS.length
+      ? Promise.resolve({ ok: true, screens: LATEST_SCREENS })
+      : fetch(APPS_SCRIPT_URL + '?action=getScreens&password=' + encodeURIComponent(PASSWORD)).then(r => r.json());
+    Promise.all([
+      fetch(APPS_SCRIPT_URL + '?action=getReservations&password=' + encodeURIComponent(PASSWORD)).then(r => r.json()),
+      screensPromise
+    ]).then(([resData, screensData]) => {
+      if (screensData.ok) LATEST_SCREENS = screensData.screens;
+      if (resData.ok) renderReservations(resData.reservations);
+    });
+  }
+
+  function renderReservations(reservations) {
+    LATEST_RESERVATIONS = reservations;
+    document.getElementById('tabResCount').textContent = reservations.filter(r => r.status === 'wachtend' || r.status === 'gereed').length;
+    const statusFilter = document.getElementById('resStatusFilter');
+    if (!statusFilter.dataset.filled) {
+      statusFilter.innerHTML = '<option value="">Alle statussen</option>' + RESERVATION_STATUSSEN.map(s => '<option value="' + s + '">' + s + '</option>').join('');
+      statusFilter.dataset.filled = '1';
+    }
+    applyReservationFilters();
+  }
+
+  function applyReservationFilters() {
+    const statusFilter = document.getElementById('resStatusFilter').value;
+    const filtered = LATEST_RESERVATIONS.filter(r => !statusFilter || r.status === statusFilter);
+    document.getElementById('resCount').textContent = filtered.length + ' van ' + LATEST_RESERVATIONS.length + ' reservering' + (LATEST_RESERVATIONS.length === 1 ? '' : 'en');
+    renderReservationRows(filtered);
+  }
+
+  function renderReservationRows(list) {
+    const container = document.getElementById('resRows');
+    container.innerHTML = '';
+    if (!list.length) {
+      container.innerHTML = '<div class="empty-state">Geen reserveringen gevonden.</div>';
+      return;
+    }
+    list.slice().reverse().forEach(r => {
+      const id = r.reservationID;
+      const screen = LATEST_SCREENS.find(sc => String(sc.screenID) === String(r.screenID));
+      const model = screen ? screen.model : '';
+      const periode = (r.desiredDateFrom || '—') + ' → ' + (r.desiredDateTo || '—');
+      const row = document.createElement('div');
+      row.className = 'list-row' + ((r.status === 'gereed') ? ' is-new' : '');
+      row.innerHTML =
+        '<div class="list-row-summary res-cols">' +
+          '<div style="font-weight:600;" title="' + esc(r.screenID) + '">' + esc(r.screenID) + '</div>' +
+          '<div title="' + esc(model) + '">' + esc(model || '—') + '</div>' +
+          '<div title="' + esc(r.reservedForCompany) + '"><strong>' + esc(r.reservedForCompany) + '</strong>' + (r.reservedForContact ? '<br><span style="color:var(--muted);font-size:12px;">' + esc(r.reservedForContact) + '</span>' : '') + '</div>' +
+          '<div style="font-size:12.5px;">' + esc(periode) + '</div>' +
+          '<div>' + selectHtml('resst-' + id, RESERVATION_STATUSSEN, r.status) + '</div>' +
+          '<div style="font-size:12.5px;" title="' + esc(r.linkedRequestID || '') + '">' + esc(r.linkedRequestID || '—') + '</div>' +
+          '<div><input type="text" id="resnot-' + id + '" value="' + esc(r.notities) + '" style="width:100%;padding:6px 8px;border:1px solid var(--line);border-radius:6px;font-size:12.5px;font-family:inherit;"></div>' +
+          '<div style="display:flex;gap:6px;justify-content:flex-end;"><button class="save save-res" data-id="' + id + '" style="padding:6px 10px;">Opslaan</button><button class="delete delete-res" data-id="' + id + '" style="padding:6px 10px;">×</button></div>' +
+        '</div>';
+      container.appendChild(row);
+    });
+    container.querySelectorAll('button.save-res').forEach(btn => btn.addEventListener('click', () => saveReservation(btn.dataset.id, btn)));
+    container.querySelectorAll('button.delete-res').forEach(btn => btn.addEventListener('click', () => deleteReservationConfirm(btn.dataset.id, btn)));
+  }
+
+  function saveReservation(id, btn) {
+    btn.disabled = true;
+    const payload = {
+      action: 'updateReservation', password: PASSWORD, reservationId: id,
+      status: document.getElementById('resst-' + id).value,
+      notities: document.getElementById('resnot-' + id).value
+    };
+    fetch(APPS_SCRIPT_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload) })
+      .then(r => r.json())
+      .then(data => { toast(data.ok ? 'Reservering bijgewerkt' : 'Mislukt: ' + data.error); if (data.ok) loadReservations(); })
+      .finally(() => { btn.disabled = false; });
+  }
+
+  function deleteReservationConfirm(id, btn) {
+    if (!confirm('Reservering ' + id + ' verwijderen? Dit kan niet ongedaan gemaakt worden.')) return;
+    btn.disabled = true;
+    fetch(APPS_SCRIPT_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'deleteReservation', password: PASSWORD, reservationId: id }) })
+      .then(r => r.json())
+      .then(data => { toast(data.ok ? 'Reservering verwijderd' : 'Mislukt: ' + data.error); if (data.ok) loadReservations(); })
+      .finally(() => { btn.disabled = false; });
+  }
+
+  // ---- Nieuwe reservering toevoegen ----
+  const addResCard = document.getElementById('addResCard');
+  const addResToggle = document.getElementById('addResToggle');
+  const addResCancel = document.getElementById('addResCancel');
+  const addResSubmit = document.getElementById('addResSubmit');
+  const addResErr = document.getElementById('addResErr');
+  const newResScreenSelect = document.getElementById('newResScreenID');
+
+  function populateResScreenSelect() {
+    newResScreenSelect.innerHTML = LATEST_SCREENS.map(sc => '<option value="' + esc(sc.screenID) + '">' + esc(sc.screenID) + ' — ' + esc(sc.model) + '</option>').join('');
+  }
+
+  function toggleAddResCard(show) {
+    addResCard.style.display = show ? 'block' : 'none';
+    addResErr.textContent = '';
+    if (show) {
+      ['newResCompany', 'newResContact', 'newResRequestId', 'newResFrom', 'newResTo', 'newResNotes'].forEach(id => document.getElementById(id).value = '');
+      if (!LATEST_SCREENS.length) {
+        fetch(APPS_SCRIPT_URL + '?action=getScreens&password=' + encodeURIComponent(PASSWORD)).then(r => r.json()).then(d => { if (d.ok) { LATEST_SCREENS = d.screens; populateResScreenSelect(); } });
+      } else {
+        populateResScreenSelect();
+      }
+    }
+  }
+  addResToggle.addEventListener('click', () => toggleAddResCard(addResCard.style.display !== 'block'));
+  addResCancel.addEventListener('click', () => toggleAddResCard(false));
+
+  addResSubmit.addEventListener('click', () => {
+    const screenID = newResScreenSelect.value;
+    const company = document.getElementById('newResCompany').value.trim();
+    if (!screenID || !company) {
+      addResErr.textContent = 'ScreenID en klant zijn verplicht.';
+      return;
+    }
+    addResErr.textContent = '';
+    addResSubmit.disabled = true; addResSubmit.textContent = 'Bezig…';
+    const payload = {
+      action: 'addReservation', password: PASSWORD,
+      screenID: screenID,
+      reservedForCompany: company,
+      reservedForContact: document.getElementById('newResContact').value.trim(),
+      linkedRequestID: document.getElementById('newResRequestId').value.trim(),
+      desiredDateFrom: document.getElementById('newResFrom').value,
+      desiredDateTo: document.getElementById('newResTo').value,
+      notities: document.getElementById('newResNotes').value.trim()
+    };
+    fetch(APPS_SCRIPT_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload) })
+      .then(r => r.json())
+      .then(data => {
+        if (data.ok) { toast('Reservering toegevoegd'); toggleAddResCard(false); loadReservations(); }
+        else { addResErr.textContent = 'Mislukt: ' + data.error; }
+      })
+      .catch(() => { addResErr.textContent = 'Mislukt: kan niet verbinden.'; })
+      .finally(() => { addResSubmit.disabled = false; addResSubmit.textContent = 'Reserveren'; });
+  });
+
+  document.getElementById('resStatusFilter').addEventListener('change', applyReservationFilters);
+  document.getElementById('resRefresh').addEventListener('click', loadReservations);
 
   document.getElementById('scrSearch').addEventListener('input', applyScreenFilters);
   document.getElementById('scrStatusFilter').addEventListener('change', applyScreenFilters);
