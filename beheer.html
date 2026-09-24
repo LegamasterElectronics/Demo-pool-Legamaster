@@ -65,6 +65,7 @@
   .scr-cols { grid-template-columns: 150px 1fr 1fr 130px 1.2fr 90px; }
   .loc-cols { grid-template-columns: 150px 1fr 1.2fr 110px 130px 1.4fr; }
   .res-cols { grid-template-columns: 150px 1fr 1.1fr 200px 120px 130px 1.2fr 90px; }
+  .bijz-cols { grid-template-columns: 150px 1fr 140px 1.6fr 120px 1.2fr 90px; }
   .list-row-summary > div { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .list-row { border-top: 1px solid var(--line); }
   .list-row-summary { padding: 14px 16px; font-size: 13px; }
@@ -105,8 +106,10 @@
   .toast { position: fixed; bottom: 20px; right: 20px; background: var(--navy); color: #fff; padding: 11px 18px; border-radius: 8px; font-size: 13px; display: none; }
 
   .reservation-flag { display: inline-flex; align-items: center; gap: 5px; background: #fff4d9; color: #9a6a00; border-radius: 999px; padding: 3px 10px; font-size: 11px; font-weight: 650; }
+  .bijz-flag { display: inline-flex; align-items: center; gap: 4px; background: var(--err-bg); color: var(--err); border-radius: 999px; padding: 2px 8px; font-size: 10.5px; font-weight: 700; margin-left: 6px; }
+  .bijz-type-badge { display: inline-block; padding: 3px 9px; border-radius: 999px; font-size: 11px; font-weight: 650; background: #eef2f8; color: var(--navy); }
 
-  @media (max-width: 900px) { .req-cols, .scr-cols, .loc-cols, .res-cols { grid-template-columns: 1fr; } }
+  @media (max-width: 900px) { .req-cols, .scr-cols, .loc-cols, .res-cols, .bijz-cols { grid-template-columns: 1fr; } }
 </style>
 </head>
 <body>
@@ -135,6 +138,7 @@
       <button class="tab" data-tab="screens">Schermen <span class="count" id="tabScrCount">0</span></button>
       <button class="tab" data-tab="oplocatie">Op locatie <span class="count" id="tabLocCount">0</span></button>
       <button class="tab" data-tab="reserveringen">Reserveringen <span class="count" id="tabResCount">0</span></button>
+      <button class="tab" data-tab="bijzonderheden">Bijzonderheden <span class="count" id="tabBijzCount">0</span></button>
     </div>
   </div>
 
@@ -275,6 +279,52 @@
       </div>
     </div>
 
+    <div id="tab-bijzonderheden" style="display:none;">
+      <div class="toolbar">
+        <div class="filters">
+          <select id="bijzStatusFilter"><option value="">Alle statussen</option></select>
+          <span class="count-text" id="bijzCount"></span>
+        </div>
+        <div style="display:flex; gap:8px;">
+          <button class="add-screen-btn" id="addBijzToggle">+ Nieuwe bijzonderheid</button>
+          <button class="refresh" id="bijzRefresh">↻ Ververs</button>
+        </div>
+      </div>
+
+      <div class="add-screen-card" id="addBijzCard" style="display:none;">
+        <div class="add-screen-grid">
+          <div>
+            <label>ScreenID *</label>
+            <select id="newBijzScreenID"></select>
+          </div>
+          <div>
+            <label>Type *</label>
+            <select id="newBijzType"></select>
+          </div>
+          <div style="grid-column: span 3;">
+            <label>Omschrijving</label>
+            <input type="text" id="newBijzOmschrijving" placeholder="bv. blijft tot begin oktober bij klant i.v.m. verlengde pilot">
+          </div>
+        </div>
+        <div class="add-screen-grid" style="margin-top:12px;">
+          <div style="grid-column: span 5;">
+            <label>Notities</label>
+            <input type="text" id="newBijzNotes" placeholder="optioneel">
+          </div>
+        </div>
+        <div class="add-screen-actions">
+          <span class="add-screen-err" id="addBijzErr"></span>
+          <button class="cancel" id="addBijzCancel">Annuleren</button>
+          <button class="save" id="addBijzSubmit">Toevoegen</button>
+        </div>
+      </div>
+
+      <div class="list-card">
+        <div class="list-head bijz-cols"><div>ScreenID</div><div>Model</div><div>Type</div><div>Omschrijving</div><div>Status</div><div>Notities</div><div></div></div>
+        <div id="bijzRows"></div>
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -287,6 +337,8 @@
   const REQUEST_STATUSSEN = ['nieuw', 'toegewezen', 'bevestigd', 'afgerond', 'geannuleerd'];
   const SCREEN_STATUSSEN = ['beschikbaar', 'uitgeleend', 'onderweg', 'in onderhoud'];
   const RESERVATION_STATUSSEN = ['wachtend', 'gereed', 'afgerond', 'geannuleerd'];
+  const BIJZONDERHEID_TYPES = ['Langer op locatie', 'Beschadigd', 'Vermist / onbekend', 'Overig'];
+  const BIJZONDERHEID_STATUSSEN = ['open', 'opgelost'];
   const TRANSPORT_NOTES = {
     'Legamaster Netherlands': ['Zelf uitrijden (goedkoper).'],
     'Legamaster Germany': ['Meestal zelf uitrijden.', 'Transportkosten altijd bij LMGmbH plaatsen — doorgeven aan Logistiek.'],
@@ -305,6 +357,7 @@
   let LATEST_REQUESTS = [];
   let LATEST_SCREENS = [];
   let LATEST_RESERVATIONS = [];
+  let LATEST_BIJZONDERHEDEN = [];
   let OPEN_REQUEST_IDS = new Set();
   let OPEN_SCREEN_IDS = new Set();
 
@@ -350,6 +403,9 @@
       document.getElementById('tab-screens').style.display = tab.dataset.tab === 'screens' ? 'block' : 'none';
       document.getElementById('tab-oplocatie').style.display = tab.dataset.tab === 'oplocatie' ? 'block' : 'none';
       document.getElementById('tab-reserveringen').style.display = tab.dataset.tab === 'reserveringen' ? 'block' : 'none';
+      document.getElementById('tab-bijzonderheden').style.display = tab.dataset.tab === 'bijzonderheden' ? 'block' : 'none';
+      if (tab.dataset.tab === 'screens') loadScreens();
+      if (tab.dataset.tab === 'bijzonderheden') loadBijzonderheden();
       if (tab.dataset.tab === 'oplocatie') renderOpLocatie();
       if (tab.dataset.tab === 'reserveringen') loadReservations();
     });
@@ -569,9 +625,13 @@
 
   // ---- Screens ----
   function loadScreens() {
-    fetch(APPS_SCRIPT_URL + '?action=getScreens&password=' + encodeURIComponent(PASSWORD))
-      .then(r => r.json())
-      .then(data => { if (data.ok) renderScreens(data.screens); });
+    Promise.all([
+      fetch(APPS_SCRIPT_URL + '?action=getScreens&password=' + encodeURIComponent(PASSWORD)).then(r => r.json()),
+      fetch(APPS_SCRIPT_URL + '?action=getBijzonderheden&password=' + encodeURIComponent(PASSWORD)).then(r => r.json())
+    ]).then(([screensData, bijzData]) => {
+      if (bijzData.ok) LATEST_BIJZONDERHEDEN = bijzData.bijzonderheden;
+      if (screensData.ok) renderScreens(screensData.screens);
+    });
   }
 
   function renderScreens(screens) {
@@ -601,11 +661,12 @@
     }
     screens.forEach(scr => {
       const id = scr.screenID;
+      const hasOpenBijz = LATEST_BIJZONDERHEDEN.some(b => String(b.screenID) === String(id) && b.status === 'open');
       const row = document.createElement('div');
       row.className = 'list-row';
       row.innerHTML =
         '<div class="list-row-summary scr-cols">' +
-          '<div style="font-weight:600;" title="' + esc(id) + '">' + id + '</div>' +
+          '<div style="font-weight:600;" title="' + esc(id) + '">' + id + (hasOpenBijz ? '<span class="bijz-flag" title="Open bijzonderheid">⚠</span>' : '') + '</div>' +
           '<div title="' + esc(scr.model) + '">' + esc(scr.model) + '</div>' +
           '<div style="color:var(--muted);" title="' + esc(scr.serienummer) + '">' + esc(scr.serienummer) + '</div>' +
           '<div><span class="status-badge ' + esc(scr.status) + '">' + esc(scr.status) + '</span></div>' +
@@ -699,10 +760,12 @@
   function renderOpLocatie() {
     Promise.all([
       fetch(APPS_SCRIPT_URL + '?action=getScreens&password=' + encodeURIComponent(PASSWORD)).then(r => r.json()),
-      fetch(APPS_SCRIPT_URL + '?action=getReservations&password=' + encodeURIComponent(PASSWORD)).then(r => r.json())
-    ]).then(([screensData, resData]) => {
+      fetch(APPS_SCRIPT_URL + '?action=getReservations&password=' + encodeURIComponent(PASSWORD)).then(r => r.json()),
+      fetch(APPS_SCRIPT_URL + '?action=getBijzonderheden&password=' + encodeURIComponent(PASSWORD)).then(r => r.json())
+    ]).then(([screensData, resData, bijzData]) => {
       if (screensData.ok) LATEST_SCREENS = screensData.screens;
       if (resData.ok) LATEST_RESERVATIONS = resData.reservations;
+      if (bijzData.ok) LATEST_BIJZONDERHEDEN = bijzData.bijzonderheden;
       const onLocation = LATEST_SCREENS.filter(sc => sc.status === 'uitgeleend' || sc.status === 'onderweg');
       document.getElementById('tabLocCount').textContent = onLocation.length;
       document.getElementById('locCount').textContent = onLocation.length + ' scherm' + (onLocation.length === 1 ? '' : 'en') + ' op locatie';
@@ -720,11 +783,12 @@
     screens.slice().sort((a, b) => sv(a.verwachteTerugkomst).localeCompare(sv(b.verwachteTerugkomst))).forEach(scr => {
       const id = scr.screenID;
       const reservation = LATEST_RESERVATIONS.find(r => String(r.screenID) === String(id) && (r.status === 'wachtend' || r.status === 'gereed'));
+      const hasOpenBijz = LATEST_BIJZONDERHEDEN.some(b => String(b.screenID) === String(id) && b.status === 'open');
       const row = document.createElement('div');
       row.className = 'list-row';
       row.innerHTML =
         '<div class="list-row-summary loc-cols">' +
-          '<div style="font-weight:600;" title="' + esc(id) + '">' + id + '</div>' +
+          '<div style="font-weight:600;" title="' + esc(id) + '">' + id + (hasOpenBijz ? '<span class="bijz-flag" title="Open bijzonderheid">⚠</span>' : '') + '</div>' +
           '<div title="' + esc(scr.model) + '">' + esc(scr.model) + '</div>' +
           '<div title="' + esc(scr.locatie || '') + '"><strong>' + esc(scr.locatie || '—') + '</strong>' + (scr.verantwoordelijke ? '<br><span style="color:var(--muted);font-size:12px;">' + esc(scr.verantwoordelijke) + '</span>' : '') + '</div>' +
           '<div style="color:var(--muted);">' + fmtDate(scr.uitleendatum) + '</div>' +
@@ -880,6 +944,148 @@
 
   document.getElementById('resStatusFilter').addEventListener('change', applyReservationFilters);
   document.getElementById('resRefresh').addEventListener('click', loadReservations);
+
+  // ---- Bijzonderheden ----
+  function loadBijzonderheden() {
+    const screensPromise = LATEST_SCREENS.length
+      ? Promise.resolve({ ok: true, screens: LATEST_SCREENS })
+      : fetch(APPS_SCRIPT_URL + '?action=getScreens&password=' + encodeURIComponent(PASSWORD)).then(r => r.json());
+    Promise.all([
+      fetch(APPS_SCRIPT_URL + '?action=getBijzonderheden&password=' + encodeURIComponent(PASSWORD)).then(r => r.json()),
+      screensPromise
+    ]).then(([bijzData, screensData]) => {
+      if (screensData.ok) LATEST_SCREENS = screensData.screens;
+      if (bijzData.ok) renderBijzonderheden(bijzData.bijzonderheden);
+    });
+  }
+
+  function renderBijzonderheden(items) {
+    LATEST_BIJZONDERHEDEN = items;
+    document.getElementById('tabBijzCount').textContent = items.filter(b => b.status === 'open').length;
+    const statusFilter = document.getElementById('bijzStatusFilter');
+    if (!statusFilter.dataset.filled) {
+      statusFilter.innerHTML = '<option value="">Alle statussen</option>' + BIJZONDERHEID_STATUSSEN.map(s => '<option value="' + s + '">' + s + '</option>').join('');
+      statusFilter.dataset.filled = '1';
+    }
+    applyBijzFilters();
+  }
+
+  function applyBijzFilters() {
+    const statusFilter = document.getElementById('bijzStatusFilter').value;
+    const filtered = LATEST_BIJZONDERHEDEN.filter(b => !statusFilter || b.status === statusFilter);
+    document.getElementById('bijzCount').textContent = filtered.length + ' van ' + LATEST_BIJZONDERHEDEN.length + ' bijzonderhe' + (LATEST_BIJZONDERHEDEN.length === 1 ? 'id' : 'den');
+    renderBijzRows(filtered);
+  }
+
+  function renderBijzRows(list) {
+    const container = document.getElementById('bijzRows');
+    container.innerHTML = '';
+    if (!list.length) {
+      container.innerHTML = '<div class="empty-state">Geen bijzonderheden gevonden.</div>';
+      return;
+    }
+    list.slice().reverse().forEach(b => {
+      const id = b.bijzonderheidID;
+      const screen = LATEST_SCREENS.find(sc => String(sc.screenID) === String(b.screenID));
+      const model = screen ? screen.model : '';
+      const row = document.createElement('div');
+      row.className = 'list-row' + (b.status === 'open' ? ' is-new' : '');
+      row.innerHTML =
+        '<div class="list-row-summary bijz-cols">' +
+          '<div style="font-weight:600;" title="' + esc(b.screenID) + '">' + esc(b.screenID) + '</div>' +
+          '<div title="' + esc(model) + '">' + esc(model || '—') + '</div>' +
+          '<div><span class="bijz-type-badge">' + esc(b.type) + '</span></div>' +
+          '<div title="' + esc(b.omschrijving || '') + '">' + esc(b.omschrijving || '—') + '</div>' +
+          '<div>' + selectHtml('bijzst-' + id, BIJZONDERHEID_STATUSSEN, b.status) + '</div>' +
+          '<div><input type="text" id="bijznot-' + id + '" value="' + esc(b.notities) + '" style="width:100%;padding:6px 8px;border:1px solid var(--line);border-radius:6px;font-size:12.5px;font-family:inherit;"></div>' +
+          '<div style="display:flex;gap:6px;justify-content:flex-end;"><button class="save save-bijz" data-id="' + id + '" style="padding:6px 10px;">Opslaan</button><button class="delete delete-bijz" data-id="' + id + '" style="padding:6px 10px;">×</button></div>' +
+        '</div>';
+      container.appendChild(row);
+    });
+    container.querySelectorAll('button.save-bijz').forEach(btn => btn.addEventListener('click', () => saveBijzonderheid(btn.dataset.id, btn)));
+    container.querySelectorAll('button.delete-bijz').forEach(btn => btn.addEventListener('click', () => deleteBijzConfirm(btn.dataset.id, btn)));
+  }
+
+  function saveBijzonderheid(id, btn) {
+    btn.disabled = true;
+    const payload = {
+      action: 'updateBijzonderheid', password: PASSWORD, bijzonderheidId: id,
+      status: document.getElementById('bijzst-' + id).value,
+      notities: document.getElementById('bijznot-' + id).value
+    };
+    fetch(APPS_SCRIPT_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload) })
+      .then(r => r.json())
+      .then(data => { toast(data.ok ? 'Bijzonderheid bijgewerkt' : 'Mislukt: ' + data.error); if (data.ok) loadBijzonderheden(); })
+      .finally(() => { btn.disabled = false; });
+  }
+
+  function deleteBijzConfirm(id, btn) {
+    if (!confirm('Bijzonderheid ' + id + ' verwijderen?')) return;
+    btn.disabled = true;
+    fetch(APPS_SCRIPT_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'deleteBijzonderheid', password: PASSWORD, bijzonderheidId: id }) })
+      .then(r => r.json())
+      .then(data => { toast(data.ok ? 'Bijzonderheid verwijderd' : 'Mislukt: ' + data.error); if (data.ok) loadBijzonderheden(); })
+      .finally(() => { btn.disabled = false; });
+  }
+
+  // ---- Nieuwe bijzonderheid toevoegen ----
+  const addBijzCard = document.getElementById('addBijzCard');
+  const addBijzToggle = document.getElementById('addBijzToggle');
+  const addBijzCancel = document.getElementById('addBijzCancel');
+  const addBijzSubmit = document.getElementById('addBijzSubmit');
+  const addBijzErr = document.getElementById('addBijzErr');
+  const newBijzScreenSelect = document.getElementById('newBijzScreenID');
+  const newBijzTypeSelect = document.getElementById('newBijzType');
+  newBijzTypeSelect.innerHTML = BIJZONDERHEID_TYPES.map(t => '<option value="' + t + '">' + t + '</option>').join('');
+
+  function populateBijzScreenSelect() {
+    newBijzScreenSelect.innerHTML = LATEST_SCREENS.map(sc => '<option value="' + esc(sc.screenID) + '">' + esc(sc.screenID) + ' — ' + esc(sc.model) + '</option>').join('');
+  }
+
+  function toggleAddBijzCard(show) {
+    addBijzCard.style.display = show ? 'block' : 'none';
+    addBijzErr.textContent = '';
+    if (show) {
+      ['newBijzOmschrijving', 'newBijzNotes'].forEach(id => document.getElementById(id).value = '');
+      newBijzTypeSelect.value = BIJZONDERHEID_TYPES[0];
+      if (!LATEST_SCREENS.length) {
+        fetch(APPS_SCRIPT_URL + '?action=getScreens&password=' + encodeURIComponent(PASSWORD)).then(r => r.json()).then(d => { if (d.ok) { LATEST_SCREENS = d.screens; populateBijzScreenSelect(); } });
+      } else {
+        populateBijzScreenSelect();
+      }
+    }
+  }
+  addBijzToggle.addEventListener('click', () => toggleAddBijzCard(addBijzCard.style.display !== 'block'));
+  addBijzCancel.addEventListener('click', () => toggleAddBijzCard(false));
+
+  addBijzSubmit.addEventListener('click', () => {
+    const screenID = newBijzScreenSelect.value;
+    const type = newBijzTypeSelect.value;
+    if (!screenID || !type) {
+      addBijzErr.textContent = 'ScreenID en type zijn verplicht.';
+      return;
+    }
+    addBijzErr.textContent = '';
+    addBijzSubmit.disabled = true; addBijzSubmit.textContent = 'Bezig…';
+    const payload = {
+      action: 'addBijzonderheid', password: PASSWORD,
+      screenID: screenID,
+      type: type,
+      omschrijving: document.getElementById('newBijzOmschrijving').value.trim(),
+      notities: document.getElementById('newBijzNotes').value.trim()
+    };
+    fetch(APPS_SCRIPT_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload) })
+      .then(r => r.json())
+      .then(data => {
+        if (data.ok) { toast('Bijzonderheid toegevoegd'); toggleAddBijzCard(false); loadBijzonderheden(); }
+        else { addBijzErr.textContent = 'Mislukt: ' + data.error; }
+      })
+      .catch(() => { addBijzErr.textContent = 'Mislukt: kan niet verbinden.'; })
+      .finally(() => { addBijzSubmit.disabled = false; addBijzSubmit.textContent = 'Toevoegen'; });
+  });
+
+  document.getElementById('bijzStatusFilter').addEventListener('change', applyBijzFilters);
+  document.getElementById('bijzRefresh').addEventListener('click', loadBijzonderheden);
 
   document.getElementById('scrSearch').addEventListener('input', applyScreenFilters);
   document.getElementById('scrStatusFilter').addEventListener('change', applyScreenFilters);
