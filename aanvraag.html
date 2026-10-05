@@ -30,6 +30,8 @@
   * { box-sizing: border-box; }
   body { margin: 0; font-family: 'Roboto', -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; background: var(--paper); color: var(--text); }
   .topbar { background: var(--lm-blue); color: #fff; position: sticky; top: 0; z-index: 10; }
+  .test-banner { display: none; background: #f39325; color: #fff; text-align: center; font-size: 12.5px; font-weight: 700; letter-spacing: 0.04em; padding: 6px 12px; }
+  .test-banner.on { display: block; }
   .topbar-top { max-width: 640px; margin: 0 auto; padding: 16px 20px 14px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
   .topbar-brand { display: flex; align-items: center; gap: 14px; min-width: 0; }
   .topbar-brand .brand-name { font-weight: 700; font-size: 17px; flex-shrink: 0; }
@@ -90,6 +92,7 @@
 <body>
 
 <div class="topbar">
+  <div class="test-banner" id="testBanner">TEST MODE — this request will NOT be sent to Bram</div>
   <div class="topbar-top">
     <div class="topbar-brand">
       <span class="brand-name">Legamaster</span>
@@ -409,6 +412,10 @@
     .then(data => {
       if (!data.ok) return;
       MAX_DEMO_DAYS = data.maxDemoDays || 21;
+      if (data.testMode) {
+        document.getElementById('testBanner').classList.add('on');
+        document.title = '[TEST] ' + document.title;
+      }
       document.getElementById('periodSub').textContent = t('periodSub').replace('{weeks}', Math.round(MAX_DEMO_DAYS / 7));
       data.organisations.forEach(o => { const opt = document.createElement('option'); opt.value = o; opt.textContent = o; orgSelect.appendChild(opt); });
       data.demoProducts.forEach(p => { const opt = document.createElement('option'); opt.value = p; opt.textContent = p; productSelect.appendChild(opt); });
