@@ -161,6 +161,10 @@
             <input type="text" id="responsibleSalesTeamMember" data-required="true">
           </div>
         </div>
+        <div>
+          <label for="requestByEmail"><span data-i18n="requestByEmail">Your email address</span> <span class="req-mark">*</span></label>
+          <input type="email" id="requestByEmail" data-required="true" autocomplete="email" inputmode="email">
+        </div>
         <div class="row2">
           <div>
             <label for="legamasterReseller" data-i18n="reseller">Legamaster reseller</label>
@@ -282,7 +286,7 @@
       title: 'Request a demo screen',
       stepRequester: 'Requester', stepShip: 'Ship to', stepProduct: 'Product', stepPeriod: 'Period',
       sectionRequester: 'Requester', requesterSub: 'Who is requesting this demo?', organisation: 'Organisation', chooseOption: 'Choose…',
-      requestBy: 'Request by (your name)', responsibleSales: 'Responsible sales team member',
+      requestBy: 'Request by (your name)', requestByEmail: 'Your email address', emailInvalid: 'Please enter a valid email address.', responsibleSales: 'Responsible sales team member',
       reseller: 'Legamaster reseller', salesPotential: 'Sales potential (units)',
       reasonForDemo: 'Reason for demo', reasonHint: '(e.g. tender, new dealer)',
       sectionShip: 'Ship to address', shipCompany: 'Company name', shipContact: 'Contact person',
@@ -308,7 +312,7 @@
       title: 'Demo scherm aanvragen',
       stepRequester: 'Aanvrager', stepShip: 'Afleveradres', stepProduct: 'Product', stepPeriod: 'Periode',
       sectionRequester: 'Aanvrager', requesterSub: 'Wie vraagt deze demo aan?', organisation: 'Organisatie', chooseOption: 'Kies…',
-      requestBy: 'Request by (jouw naam)', responsibleSales: 'Verantwoordelijke sales',
+      requestBy: 'Request by (jouw naam)', requestByEmail: 'Jouw e-mailadres', emailInvalid: 'Vul een geldig e-mailadres in.', responsibleSales: 'Verantwoordelijke sales',
       reseller: 'Legamaster reseller', salesPotential: 'Sales potentieel (units)',
       reasonForDemo: 'Reden voor demo', reasonHint: '(bv. tender, nieuwe dealer)',
       sectionShip: 'Afleveradres', shipCompany: 'Bedrijfsnaam', shipContact: 'Contactpersoon',
@@ -334,7 +338,7 @@
       title: 'Demo-Bildschirm anfragen',
       stepRequester: 'Antragsteller', stepShip: 'Lieferadresse', stepProduct: 'Produkt', stepPeriod: 'Zeitraum',
       sectionRequester: 'Antragsteller', requesterSub: 'Wer beantragt diese Demo?', organisation: 'Organisation', chooseOption: 'Auswählen…',
-      requestBy: 'Angefragt von (Ihr Name)', responsibleSales: 'Zuständiger Vertriebsmitarbeiter',
+      requestBy: 'Angefragt von (Ihr Name)', requestByEmail: 'Ihre E-Mail-Adresse', emailInvalid: 'Bitte geben Sie eine gültige E-Mail-Adresse ein.', responsibleSales: 'Zuständiger Vertriebsmitarbeiter',
       reseller: 'Legamaster Reseller', salesPotential: 'Verkaufspotenzial (Einheiten)',
       reasonForDemo: 'Grund für die Demo', reasonHint: '(z. B. Ausschreibung, neuer Händler)',
       sectionShip: 'Lieferadresse', shipCompany: 'Firmenname', shipContact: 'Ansprechpartner',
@@ -360,7 +364,7 @@
       title: 'Demander un écran de démonstration',
       stepRequester: 'Demandeur', stepShip: 'Livraison', stepProduct: 'Produit', stepPeriod: 'Période',
       sectionRequester: 'Demandeur', requesterSub: 'Qui demande cette démo ?', organisation: 'Organisation', chooseOption: 'Choisir…',
-      requestBy: 'Demandé par (votre nom)', responsibleSales: 'Responsable commercial',
+      requestBy: 'Demandé par (votre nom)', requestByEmail: 'Votre adresse e-mail', emailInvalid: 'Veuillez saisir une adresse e-mail valide.', responsibleSales: 'Responsable commercial',
       reseller: 'Revendeur Legamaster', salesPotential: 'Potentiel de vente (unités)',
       reasonForDemo: 'Motif de la démo', reasonHint: "(ex. appel d'offres, nouveau revendeur)",
       sectionShip: 'Adresse de livraison', shipCompany: "Nom de l'entreprise", shipContact: 'Personne à contacter',
@@ -488,8 +492,13 @@
   function stepValid(step) {
     const card = document.querySelector('.card[data-step="' + step + '"]');
     const required = card.querySelectorAll('[data-required="true"]');
-    for (const el of required) { if (!el.value) return false; }
-    return true;
+    for (const el of required) { if (!el.value.trim()) return false; }
+    return emailOk(card);
+  }
+  const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+  function emailOk(card) {
+    const el = card.querySelector('#requestByEmail');
+    return !el || EMAIL_RE.test(el.value.trim());
   }
 
   function showStep(step) {
@@ -509,7 +518,9 @@
 
   document.getElementById('btnNext').addEventListener('click', () => {
     if (!stepValid(currentStep)) {
-      msg.textContent = t('requiredMsg'); msg.className = 'msg err';
+      const cur = document.querySelector('.card[data-step="' + currentStep + '"]');
+      const allFilled = Array.from(cur.querySelectorAll('[data-required="true"]')).every(el => el.value.trim());
+      msg.textContent = (allFilled && !emailOk(cur)) ? t('emailInvalid') : t('requiredMsg'); msg.className = 'msg err';
       return;
     }
     msg.className = 'msg';
@@ -547,6 +558,7 @@
       action: 'submitRequest',
       organisation: document.getElementById('organisation').value,
       requestBy: document.getElementById('requestBy').value.trim(),
+      requestByEmail: document.getElementById('requestByEmail').value.trim(),
       responsibleSalesTeamMember: document.getElementById('responsibleSalesTeamMember').value.trim(),
       legamasterReseller: document.getElementById('legamasterReseller').value.trim(),
       salesPotentialUnits: document.getElementById('salesPotentialUnits').value,

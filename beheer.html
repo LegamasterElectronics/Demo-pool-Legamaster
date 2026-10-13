@@ -407,6 +407,16 @@
   let LATEST_RESERVATIONS = [];
   let LATEST_BIJZONDERHEDEN = [];
   let OPEN_REQUEST_IDS = new Set();
+  // Deeplink uit de notificatiemail: beheer.html?req=REQ-… opent direct die aanvraag.
+  const DEEP_REQ = new URLSearchParams(location.search).get('req');
+  if (DEEP_REQ) OPEN_REQUEST_IDS.add(DEEP_REQ);
+  function focusDeepLink() {
+    if (!DEEP_REQ) return;
+    setTimeout(() => {
+      const el = document.getElementById('detail-' + DEEP_REQ);
+      if (el && el.parentElement) { el.parentElement.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+    }, 150);
+  }
   let OPEN_SCREEN_IDS = new Set();
 
   // ---- Login ----
@@ -429,6 +439,7 @@
           gate.style.display = 'none';
           app.style.display = 'block';
           renderRequests(data.requests);
+          focusDeepLink();
           loadScreens();
         } else {
           pwErr.textContent = 'Onjuist wachtwoord.';
@@ -575,6 +586,7 @@
 
       '<div class="detail-card"><div class="detail-card-title">Aanvrager</div><div class="detail-grid">' +
         field('Aangevraagd door', req.requestBy) +
+        field('E-mail aanvrager', req.requestByEmail) +
         field('Verantwoordelijke sales', req.responsibleSalesTeamMember) +
         field('Reseller', req.legamasterReseller) +
         field('Sales potentieel (units)', req.salesPotentialUnits) +
