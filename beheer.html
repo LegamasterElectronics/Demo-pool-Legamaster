@@ -232,6 +232,8 @@
   .sdot { width: 10px; height: 10px; border-radius: 50%; background: #8291A3; }
   .sdot.beschikbaar { background: var(--ok); } .sdot[class~="3105"] { background: var(--navy); } .sdot.intern { background: #8291A3; }
   .grp-head { padding: 10px 20px; background: #FAFBFD; border-bottom: 1px solid #E6EBF2; color: var(--muted); }
+  .list-row.just-returned, .list-row.just-returned:nth-child(even) { background: #E8F5EC; box-shadow: inset 3px 0 0 var(--ok); }
+  .newtag { font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 600; color: var(--ok); background: #fff; border: 1px solid #B7DFC4; border-radius: 6px; padding: 1px 6px; margin-left: 6px; }
   .model-first { font-weight: 700; } .model-rep { color: #9AA7BA; }
 
   /* Detail: informatie links, Beheer-paneel rechts */
@@ -474,6 +476,8 @@
       tab.classList.add('active');
       document.getElementById('pageTitle').textContent = tab.firstChild.textContent.trim();
       document.getElementById('pageSub').textContent = PAGE_SUBS[tab.dataset.tab] || '';
+      if (tab.dataset.tab === 'screens') RETURNED_SEEN = RETURNED.size > 0;
+      else if (RETURNED_SEEN) { RETURNED.clear(); RETURNED_SEEN = false; saveReturned(); }
       document.getElementById('tab-requests').style.display = tab.dataset.tab === 'requests' ? 'block' : 'none';
       document.getElementById('tab-screens').style.display = tab.dataset.tab === 'screens' ? 'block' : 'none';
       document.getElementById('tab-oplocatie').style.display = tab.dataset.tab === 'oplocatie' ? 'block' : 'none';
@@ -777,7 +781,8 @@
   const LEGACY_SCREEN_STATUS = { 'in onderhoud': '3105', 'onderweg': 'uitgeleend' };
   function normScreens(list) {
     return (list || []).map(s => {
-      const st = LEGACY_SCREEN_STATUS[String(s.status).toLowerCase()] || s.status;
+      const raw = (s.status === undefined || s.status === null) ? '' : String(s.status).trim().toLowerCase();
+      const st = LEGACY_SCREEN_STATUS[raw] || raw;
       return st === s.status ? s : Object.assign({}, s, { status: st });
     });
   }
@@ -860,13 +865,13 @@
     screens.forEach(scr => {
       const id = scr.screenID;
       if (SCR_SORT.key !== 'screenID') {
-        const grp = keyOf(scr);
+        const grp = String(keyOf(scr) == null ? '' : keyOf(scr));
         if (grp !== lastGrp) {
           lastGrp = grp; lastModel = null;
-          const n = screens.filter(s => keyOf(s) === grp).length;
+          const n = screens.filter(s => String(keyOf(s) == null ? '' : keyOf(s)) === grp).length;
           const gh = document.createElement('div');
           if (SCR_SORT.key === 'model') { gh.className = 'grp-head'; gh.textContent = grp + ' (' + n + ')'; }
-          else { gh.className = 'sec-head'; gh.innerHTML = '<span class="sdot ' + esc(grp) + '"></span><b>' + esc(grp.charAt(0).toUpperCase() + grp.slice(1)) + '</b><span class="count">' + n + '</span><span class="hint">' + esc(SEC_HINT[grp] || '') + '</span>'; }
+          else { gh.className = 'sec-head'; gh.innerHTML = '<span class="sdot ' + esc(grp) + '"></span><b>' + esc(grp ? grp.charAt(0).toUpperCase() + grp.slice(1) : 'Zonder status') + '</b><span class="count">' + n + '</span><span class="hint">' + esc(SEC_HINT[grp] || '') + '</span>'; }
           container.appendChild(gh);
         }
       }
@@ -875,11 +880,11 @@
         : '<div class="model-first" title="' + esc(scr.model) + '">' + esc(scr.model) + '</div>';
       lastModel = scr.model;
       const row = document.createElement('div');
-      row.className = 'list-row';
+      row.className = 'list-row' + (RETURNED.has(String(id)) ? ' just-returned' : '');
       row.innerHTML =
         '<div class="list-row-summary scr-cols">' +
           modelCell +
-          '<div class="mono" title="' + esc(id) + '">' + esc(id) + '</div>' +
+          '<div class="mono" title="' + esc(id) + '">' + esc(id) + (RETURNED.has(String(id)) ? ' <span class="newtag">net terug</span>' : '') + '</div>' +
           '<div><span class="status-badge ' + esc(scr.status) + '">' + esc(scr.status) + '</span></div>' +
           '<div style="color:var(--muted);">' + esc(scr.firmwareVersie || '—') + '</div>' +
           '<div title="' + esc(scr.locatie || '') + '">' + esc(scr.locatie || '—') + '</div>' +
@@ -1019,15 +1024,22 @@
     container.querySelectorAll('button.back-avail').forEach(btn => btn.addEventListener('click', () => backToAvailable(btn.dataset.id, btn)));
   }
 
+  // Net teruggezette schermen krijgen eenmalig een kleurtje in de lijst Schermen
+  let RETURNED = new Set();
+  let RETURNED_SEEN = false;
+  try { RETURNED = new Set(JSON.parse(localStorage.getItem('demopool_returned') || '[]')); } catch (e) {}
+  function saveReturned() { try { localStorage.setItem('demopool_returned', JSON.stringify(Array.from(RETURNED))); } catch (e) {} }
+  function markReturned(id) { RETURNED.add(String(id)); RETURNED_SEEN = false; saveReturned(); }
+
   function backToAvailable(id, btn) {
     btn.disabled = true; btn.textContent = 'Bezig…';
     fetch(APPS_SCRIPT_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({
       action: 'updateScreen', password: PASSWORD, screenId: id,
-      status: 'beschikbaar', locatie: 'Schermen Lochem', verantwoordelijke: '', uitleendatum: '', verwachteTerugkomst: ''
+      status: 'beschikbaar', verantwoordelijke: '', uitleendatum: '', verwachteTerugkomst: ''
     }) })
       .then(r => r.json())
       .then(data => {
-        if (data.ok) { toast('Scherm ' + id + ' staat weer op beschikbaar'); loadScreens(); renderOpLocatie(); }
+        if (data.ok) { markReturned(id); toast('Scherm ' + id + ' staat weer op beschikbaar'); loadScreens(); renderOpLocatie(); }
         else { toast('Mislukt: ' + data.error); btn.disabled = false; btn.textContent = 'Terug: beschikbaar'; }
       })
       .catch(() => { toast('Mislukt: kan niet verbinden'); btn.disabled = false; btn.textContent = 'Terug: beschikbaar'; });
