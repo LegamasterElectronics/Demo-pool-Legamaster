@@ -9,7 +9,7 @@
 <link rel="apple-touch-icon" href="favicon-180.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
-<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
 <style>
   :root {
     --navy: #00368e; --accent: #f39325; --accent-dark: #d97e14; --cyan: #19b0e4;
@@ -24,7 +24,7 @@
   }
   * { box-sizing: border-box; }
   body {
-    margin: 0; font-family: 'Roboto', -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    margin: 0; font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
     background: var(--paper); color: var(--text); font-size: 13px;
     background-image: radial-gradient(circle at 8% -8%, rgba(0,54,142,.05), transparent 32%),
                       radial-gradient(circle at 96% 4%, rgba(243,147,37,.045), transparent 28%);
@@ -94,7 +94,7 @@
   .list-head, .list-row-summary { display: grid; gap: 10px; padding: 11px 18px; align-items: center; }
   .list-head { position: sticky; top: 0; z-index: 20; box-shadow: 0 1px 0 rgba(0,0,0,.04); background: #fff; font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); font-weight: 700; border-bottom: 1.5px solid var(--text); }
   .req-cols { grid-template-columns: 110px 90px 1.3fr 1.1fr 1.1fr 130px 110px 110px 80px; }
-  .scr-cols { grid-template-columns: 190px 1fr 130px 1.4fr 90px; }
+  .scr-cols { grid-template-columns: 150px 200px 150px 100px 1fr 90px; }
   .loc-cols { grid-template-columns: 190px 1fr 1.4fr 110px 130px 150px; }
   .grp-head { padding: 8px 18px; font-size: 12px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); background: #eef2f8; border-bottom: 1px solid var(--line, #e3e8ef); }
   .list-head .sortable { cursor: pointer; user-select: none; }
@@ -156,6 +156,124 @@
 
 
   @media (max-width: 900px) { .req-cols, .scr-cols, .loc-cols { grid-template-columns: 1fr; } .list-head { display: none; } .tab { padding: 12px 12px; } }
+
+  /* ══ Ontwerp v2 (Design-sessie okt 2026): rustiger, meer overzicht ══ */
+  body { background: #F5F7FA; background-image: none; font-size: 14px; -webkit-font-smoothing: antialiased; letter-spacing: -0.003em; }
+  .mono { font-family: 'JetBrains Mono', ui-monospace, Menlo, Consolas, monospace; font-size: 12.5px; letter-spacing: -.01em; }
+
+  .topbar { border-bottom: 1px solid #E1E7F0; }
+  .topbar-inner { max-width: 1320px; padding: 0 24px; height: 56px; flex-wrap: nowrap; gap: 40px; }
+  .brand { font-weight: 700; color: var(--navy); letter-spacing: -.01em; white-space: nowrap; }
+  .brand .dot { width: 22px; height: 22px; border-radius: 6px; }
+  .brand .version-badge { font-size: 17px; font-weight: 500; color: var(--muted); margin: 0; }
+  .brand .divider, .brand img.logo { display: none; }
+  .brand .dot { margin-right: 0; }
+  .tabbar { border: none; background: transparent; flex-grow: 1; align-self: stretch; }
+  .tabs { max-width: none; padding: 0; gap: 28px; height: 100%; flex-wrap: nowrap; }
+  .tab { padding: 0 2px; height: 56px; font-size: 14px; font-weight: 500; border-bottom: 2px solid transparent; }
+  .tab.active { background: none; font-weight: 600; border-bottom-color: var(--navy); }
+  .tab .count { background: #E9EEF6; color: #3B4A63; font-size: 12px; font-weight: 600; }
+  .tab.active .count { background: #E9EEF6; color: var(--navy); }
+  .admin-badge { display: flex; align-items: center; gap: 10px; background: none; color: var(--muted); font-size: 13px; font-weight: 500; padding: 0; }
+  .admin-badge .av { width: 30px; height: 30px; border-radius: 50%; background: #E9EEF6; color: var(--navy); font-weight: 700; font-style: normal; display: flex; align-items: center; justify-content: center; }
+
+  .content { max-width: 1320px; padding: 0 24px 90px; }
+  .page-head { border: none; margin: 28px 0 20px; padding: 0; }
+  .page-head h2 { font-size: 26px; letter-spacing: -.02em; color: var(--text); }
+  .page-sub { margin-top: 4px; font-size: 14px; color: var(--muted); }
+
+  .stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; margin-bottom: 20px; }
+  .stat { background: #fff; border: 1px solid #E1E7F0; border-radius: 12px; padding: 16px 18px; }
+  .stat.warn { border-top: 3px solid var(--accent); }
+  .stat .lbl { font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); }
+  .stat .num { font-size: 30px; font-weight: 700; margin-top: 6px; letter-spacing: -.02em; }
+  .stat .sub { font-size: 13px; color: var(--muted); }
+
+  .toolbar { background: #FAFBFD; border-color: #E1E7F0; border-radius: 12px 12px 0 0; padding: 12px 20px; }
+  .toolbar input[type=text], .toolbar select { border-color: #CBD5E3; border-radius: 8px; }
+  .chips { display: flex; gap: 8px; flex-wrap: wrap; }
+  .chip { font: 600 13px 'Inter', sans-serif; border: 1px solid #CBD5E3; background: #fff; color: var(--text); border-radius: 8px; padding: 6px 12px; cursor: pointer; }
+  .chip:hover { border-color: var(--navy); color: var(--navy); }
+  .chip.on { background: var(--navy); border-color: var(--navy); color: #fff; }
+
+  .list-card { border-color: #E1E7F0; border-radius: 0 0 12px 12px; box-shadow: none; }
+  .list-head { border-bottom: 1px solid #E6EBF2; font-size: 11px; font-weight: 600; letter-spacing: .05em; padding: 10px 20px; box-shadow: none; }
+  .list-row { border-top: 1px solid #E6EBF2; border-left: none; }
+  .list-row:nth-child(even) { background: #fff; }
+  .list-row:hover { background: #FAFBFD; }
+  .list-row.is-new { background: #FFFBF3; box-shadow: inset 3px 0 0 var(--accent); }
+  .list-row.is-new:hover { background: #FFF6E6; }
+  .list-row-summary { padding: 13px 20px; font-size: 14px; }
+  .req-cols { grid-template-columns: 150px 56px minmax(0,1.6fr) 100px 120px 140px 100px 150px 80px; gap: 12px; }
+  .req-cols > div:nth-child(5) { white-space: normal; }
+  .badge { border-radius: 6px; font-size: 11.5px; font-weight: 600; padding: 2px 7px; background: #EEF2F8; color: #3B4A63; }
+  .badge.on { background: #EEF2F8; color: #3B4A63; }
+  .badge.off { display: none; }
+
+  /* Status: stip + tekst */
+  .status-badge, .status-badge[class] { background: none; box-shadow: none; color: var(--text); text-transform: none; letter-spacing: 0; font-size: 13.5px; font-weight: 500; padding: 0; gap: 8px; justify-content: flex-start; }
+  .status-badge::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: #8291A3; flex-shrink: 0; }
+  .status-badge.nieuw::before, .status-badge.wachtend::before { background: var(--accent); }
+  .status-badge.toegewezen::before, .status-badge[class~="3105"]::before { background: var(--navy); }
+  .status-badge.bevestigd::before, .status-badge.onderweg::before { background: var(--cyan); }
+  .status-badge.beschikbaar::before, .status-badge.gereed::before, .status-badge.opgelost::before { background: var(--ok); }
+  .status-badge.uitgeleend::before { background: var(--accent-dark); }
+  .status-badge.geannuleerd::before, .status-badge.onderhoud::before, .status-badge.open::before { background: var(--warn); }
+
+  .daytag { display: inline-block; font-size: 12px; font-weight: 600; border-radius: 6px; padding: 1px 7px; margin-top: 3px; }
+  .daytag.calm { color: var(--muted); font-weight: 500; padding-left: 0; }
+  .daytag.soon { color: var(--amber); background: var(--amber-bg); }
+  .daytag.late { color: var(--warn); background: var(--warn-bg); }
+
+  .sec-head { display: flex; align-items: center; gap: 10px; padding: 12px 20px; background: #FAFBFD; border-top: 1px solid #E6EBF2; border-bottom: 1px solid #E6EBF2; }
+  .sec-head b { font-size: 15px; }
+  .sec-head .count { font-size: 12px; font-weight: 600; background: #E9EEF6; color: #3B4A63; border-radius: 999px; padding: 1px 8px; }
+  .sec-head .hint { font-size: 13px; color: var(--muted); }
+  .sdot { width: 10px; height: 10px; border-radius: 50%; background: #8291A3; }
+  .sdot.beschikbaar { background: var(--ok); } .sdot[class~="3105"] { background: var(--navy); } .sdot.intern { background: #8291A3; }
+  .grp-head { padding: 10px 20px; background: #FAFBFD; border-bottom: 1px solid #E6EBF2; color: var(--muted); }
+  .model-first { font-weight: 700; } .model-rep { color: #9AA7BA; }
+
+  /* Detail: informatie links, Beheer-paneel rechts */
+  .detail-wrap { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(320px, 1fr); gap: 24px; align-items: start; background: #F8FAFD; padding: 24px 20px; border-top: 1px solid #E1E7F0; }
+  .dcol { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+  .detail-wrap:not(:has(.dcol)) { display: flex; flex-direction: column; }
+  .detail-wrap:not(:has(.dcol)) .detail-card { max-width: 980px; }
+  #locSearch, #scrSearch { width: 340px !important; }
+  .detail-card { border: 1px solid #E1E7F0; border-left: 1px solid #E1E7F0; border-radius: 12px; padding: 20px; }
+  .detail-card.editable { border-color: #C9D6EE; border-left-color: #C9D6EE; box-shadow: 0 8px 24px rgba(0,54,142,.08); }
+  .detail-card-title { font-size: 15px; text-transform: none; letter-spacing: 0; font-weight: 700; color: var(--text); }
+  .detail-card.editable .detail-card-title { color: var(--navy); }
+  .detail-field label { font-size: 11px; font-weight: 600; letter-spacing: .05em; }
+  .detail-field .static { font-size: 14px; }
+  .detail-field select, .detail-field input { border-color: #CBD5E3; border-radius: 8px; padding: 9px 11px; font-size: 14px; }
+  .dside .detail-grid { grid-template-columns: 1fr 1fr; }
+  .dside .detail-grid .detail-field:nth-child(-n+2), .dside .detail-grid .full { grid-column: 1 / -1; }
+  .dside .detail-actions { position: sticky; bottom: 12px; justify-content: space-between; background: #F8FAFD; padding: 8px 0; }
+    .transport-notice { border-radius: 8px; }
+
+  button.toggle-details, button.back-avail, button.refresh { box-shadow: none; background: #fff; border-color: #CBD5E3; border-radius: 8px; font-weight: 600; font-family: inherit; }
+  button.save, button.add-screen-btn, #gate button { background: var(--navy); box-shadow: none; border-radius: 8px; font-weight: 600; }
+  button.save:hover, button.add-screen-btn:hover { background: #002a76; }
+  button.delete { border-radius: 8px; font-weight: 600; }
+
+  @media (max-width: 900px) {
+    .topbar-inner { flex-wrap: wrap; height: auto; padding: 10px 16px; gap: 8px 16px; }
+    .tabbar { order: 3; width: 100%; flex-basis: 100%; }
+    .tabs { gap: 14px; overflow-x: auto; }
+    .tab { height: 44px; white-space: nowrap; }
+    .content { padding: 0 16px 90px; }
+    .stats { grid-template-columns: 1fr 1fr; }
+    .detail-wrap { grid-template-columns: 1fr; padding: 16px 12px; }
+    .dside, .dside .detail-actions { position: static; }
+    .detail-grid { grid-template-columns: 1fr; }
+    .list-row-summary { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; padding: 14px 16px; }
+    .list-row-summary > div { white-space: normal; overflow: visible; }
+    .list-row-summary > div:last-child { align-self: stretch; text-align: left !important; }
+    button.toggle-details, button.back-avail, .chip, button.refresh, button.add-screen-btn { min-height: 44px; padding: 0 14px; }
+    .toolbar input[type=text], #locSearch, #scrSearch { width: 100% !important; }
+    .scr-cols > div:nth-child(4) { display: none; }
+  }
 </style>
 </head>
 <body>
@@ -175,27 +293,29 @@
   <div class="topbar">
     <div class="topbar-inner">
       <div class="brand"><img class="logo" src="legamaster-logo.png" alt="Legamaster"><span class="divider"></span><span class="dot"></span> Demo pool <span class="version-badge">beheer</span></div>
-      <span class="admin-badge">Beheerder</span>
-    </div>
-  </div>
-
-  <nav class="tabbar">
+<nav class="tabbar">
     <div class="tabs">
       <button class="tab active" data-tab="requests">Aanvragen <span class="count" id="tabReqCount">0</span></button>
       <button class="tab" data-tab="screens">Schermen <span class="count" id="tabScrCount">0</span></button>
       <button class="tab" data-tab="oplocatie">Op locatie <span class="count" id="tabLocCount">0</span></button>
     </div>
   </nav>
+      <span class="admin-badge"><i class="av">B</i>Beheerder</span>
+    </div>
+  </div>
+
+
 
   <div class="content">
 
-    <div class="page-head"><h2 id="pageTitle">Aanvragen</h2></div>
+    <div class="page-head"><div><h2 id="pageTitle">Aanvragen</h2><div class="page-sub" id="pageSub"></div></div></div>
 
     <div id="tab-requests">
+      <div class="stats" id="reqStats"></div>
       <div class="toolbar">
         <div class="filters">
           <input type="text" id="reqSearch" placeholder="Zoek op klant of organisatie…">
-          <select id="reqStatusFilter"><option value="">Alle statussen</option></select>
+          <div class="chips" id="reqChips"></div><select id="reqStatusFilter" style="display:none"><option value="">Alle statussen</option></select>
           <span class="count-text" id="reqCount"></span>
         </div>
         <button class="refresh" id="reqRefresh">↻ Ververs</button>
@@ -210,7 +330,7 @@
       <div class="toolbar">
         <div class="filters">
           <input type="text" id="scrSearch" placeholder="Zoek op serienummer, model of locatie…">
-          <select id="scrStatusFilter"><option value="">Alle statussen</option></select>
+          <div class="chips" id="scrChips"></div><select id="scrStatusFilter" style="display:none"><option value="">Alle statussen</option></select>
           <span class="count-text" id="scrCount"></span>
         </div>
         <div style="display:flex; gap:8px;">
@@ -246,7 +366,7 @@
       </div>
 
       <div class="list-card">
-        <div class="list-head scr-cols" id="scrHead"><div class="sortable" data-sort="screenID">Serienummer <i></i></div><div class="sortable" data-sort="model">Model <i></i></div><div class="sortable" data-sort="status">Status <i></i></div><div>Locatie</div><div></div></div>
+        <div class="list-head scr-cols" id="scrHead"><div class="sortable" data-sort="model">Model <i></i></div><div class="sortable" data-sort="screenID">Serienummer <i></i></div><div class="sortable" data-sort="status">Status <i></i></div><div>Firmware</div><div>Locatie</div><div></div></div>
         <div id="scrRows"></div>
       </div>
     </div>
@@ -340,12 +460,20 @@
   const savedPw = sessionStorage.getItem('demopool_pw');
   if (savedPw) { pwInput.value = savedPw; tryLogin(); }
 
+  const PAGE_SUBS = {
+    requests: 'Wat moet er nu gebeuren? Nieuwe aanvragen staan bovenaan.',
+    screens: 'In het magazijn en intern. Uitgeleende schermen staan onder Op locatie.',
+    oplocatie: 'Uitgeleende schermen. Die met de eerste terugkomst staan bovenaan.'
+  };
+  document.getElementById('pageSub').textContent = PAGE_SUBS.requests;
+
   // ---- Tabs ----
   document.querySelectorAll('.tab').forEach(tab => {
     tab.addEventListener('click', () => {
       document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
       tab.classList.add('active');
       document.getElementById('pageTitle').textContent = tab.firstChild.textContent.trim();
+      document.getElementById('pageSub').textContent = PAGE_SUBS[tab.dataset.tab] || '';
       document.getElementById('tab-requests').style.display = tab.dataset.tab === 'requests' ? 'block' : 'none';
       document.getElementById('tab-screens').style.display = tab.dataset.tab === 'screens' ? 'block' : 'none';
       document.getElementById('tab-oplocatie').style.display = tab.dataset.tab === 'oplocatie' ? 'block' : 'none';
@@ -388,13 +516,61 @@
       .then(data => { if (data.ok) renderRequests(data.requests); });
   }
 
+  // ---- Dag-labels, filterchips en tellers ----
+  const URGENT_DAYS = 3;
+  function daysFromToday(iso) {
+    if (!iso) return null;
+    const d = new Date(iso + 'T00:00:00'); if (isNaN(d)) return null;
+    const t = new Date(); t.setHours(0, 0, 0, 0);
+    return Math.round((d - t) / 86400000);
+  }
+  function dayTag(iso, kind) {
+    const n = daysFromToday(iso);
+    if (n === null) return '';
+    let cls = 'calm', txt;
+    if (kind === 'back') {
+      if (n < 0) { cls = 'late'; txt = (-n) + (n === -1 ? ' dag' : ' dagen') + ' te laat'; }
+      else if (n === 0) { cls = 'soon'; txt = 'vandaag'; }
+      else { txt = 'over ' + n + (n === 1 ? ' dag' : ' dagen'); if (n <= 2) cls = 'soon'; }
+    } else {
+      if (n < 0) { cls = 'late'; txt = 'startdatum verstreken'; }
+      else if (n === 0) { cls = 'soon'; txt = 'start vandaag'; }
+      else { txt = 'over ' + n + (n === 1 ? ' dag' : ' dagen'); if (n <= URGENT_DAYS) cls = 'soon'; }
+    }
+    return '<span class="daytag ' + cls + '">' + txt + '</span>';
+  }
+  function renderChips(chipsId, selectId, values, countFn) {
+    const sel = document.getElementById(selectId);
+    const box = document.getElementById(chipsId);
+    box.innerHTML = values.map(v => {
+      const label = v === '' ? 'Alle' : v.charAt(0).toUpperCase() + v.slice(1);
+      return '<button type="button" class="chip' + (sel.value === v ? ' on' : '') + '" data-v="' + v + '">' + label + ' · ' + countFn(v) + '</button>';
+    }).join('');
+    box.querySelectorAll('.chip').forEach(b => b.addEventListener('click', () => { sel.value = b.dataset.v; sel.dispatchEvent(new Event('change')); }));
+  }
+  function renderStats() {
+    const box = document.getElementById('reqStats');
+    if (!box) return;
+    const n = s => LATEST_REQUESTS.filter(r => r.status === s).length;
+    const soon = LATEST_REQUESTS.filter(r => r.status === 'nieuw' && daysFromToday(r.dateArrive) !== null && daysFromToday(r.dateArrive) <= URGENT_DAYS).length;
+    const avail = LATEST_SCREENS.filter(s => s.status === 'beschikbaar').length;
+    const card = (cls, label, num, sub) => '<div class="stat ' + cls + '"><div class="lbl">' + label + '</div><div class="num">' + num + '</div><div class="sub">' + sub + '</div></div>';
+    box.innerHTML =
+      card('warn', 'Nieuw — actie nodig', n('nieuw'), soon ? soon + ' start binnen ' + URGENT_DAYS + ' dagen' : 'geen haast') +
+      card('', 'Scherm toegewezen', n('toegewezen'), 'wacht op bevestiging') +
+      card('', 'Bevestigd', n('bevestigd'), 'klaar voor verzending') +
+      card('', 'Beschikbaar in pool', avail, 'schermen direct inzetbaar');
+  }
+
   function renderRequests(requests) {
     LATEST_REQUESTS = requests;
     document.getElementById('tabReqCount').textContent = requests.length;
+    renderStats();
     applyRequestFilters();
   }
 
   function applyRequestFilters() {
+    renderChips('reqChips', 'reqStatusFilter', [''].concat(REQUEST_STATUSSEN), v => v === '' ? LATEST_REQUESTS.length : LATEST_REQUESTS.filter(r => r.status === v).length);
     const q = document.getElementById('reqSearch').value.trim().toLowerCase();
     const statusFilter = document.getElementById('reqStatusFilter').value;
     const filtered = LATEST_REQUESTS.filter(r => {
@@ -419,14 +595,14 @@
       row.className = 'list-row' + (req.status === 'nieuw' ? ' is-new' : '');
       row.innerHTML =
         '<div class="list-row-summary req-cols">' +
-          '<div style="font-weight:600;" title="' + esc(id) + '">' + id + '</div>' +
+          '<div class="mono" style="font-weight:500;" title="' + esc(id) + '">' + id + '</div>' +
           '<div style="color:var(--muted);">' + fmtDate(req.timestamp) + '</div>' +
           '<div title="' + esc(req.shipCompanyName) + '"><strong>' + esc(req.shipCompanyName) + '</strong><br><span style="color:var(--muted);font-size:12px;">' + esc(req.organisation) + '</span></div>' +
           '<div title="' + esc(req.demoProduct) + '">' + esc(req.demoProduct) + '</div>' +
           '<div>' + badge('Air', req.airServerNodig) + badge('PC', req.demoPCNodig) + badge('Nav', req.navigatorNodig) + badge('Cam', req.cameraNodig) + '</div>' +
-          '<div style="white-space:nowrap;font-size:12.5px;">' + fmtDate(req.dateArrive) + ' → ' + fmtDate(req.datePickup) + '</div>' +
+          '<div style="font-size:13px;"><div style="white-space:nowrap;font-weight:500;">' + fmtDate(req.dateArrive) + ' → ' + fmtDate(req.datePickup) + '</div>' + (['nieuw', 'toegewezen', 'bevestigd'].indexOf(req.status) >= 0 ? dayTag(req.dateArrive, 'start') : '') + '</div>' +
           '<div><span class="status-badge ' + esc(req.status) + '">' + esc(req.status) + '</span></div>' +
-          '<div style="font-size:12.5px;" title="' + esc(req.toegewezenScreenID || '') + '">' + esc(req.toegewezenScreenID || '—') + '</div>' +
+          '<div class="mono" title="' + esc(req.toegewezenScreenID || '') + '">' + esc(req.toegewezenScreenID || '—') + '</div>' +
           '<div style="text-align:right;"><button class="toggle-details" data-id="' + id + '">' + (OPEN_REQUEST_IDS.has(id) ? 'Verberg' : 'Details') + '</button></div>' +
         '</div>' +
         '<div class="detail-row" id="detail-' + id + '" style="' + (OPEN_REQUEST_IDS.has(id) ? 'display:table-row;' : '') + '"></div>';
@@ -465,7 +641,7 @@
     function field(label, value) {
       return '<div class="detail-field"><label>' + label + '</label><div class="static">' + (esc(value) || '—') + '</div></div>';
     }
-    return '<div class="detail-wrap">' +
+    return '<div class="detail-wrap"><div class="dcol">' +
 
       '<div class="detail-card"><div class="detail-card-title">Aanvrager</div><div class="detail-grid">' +
         field('Aangevraagd door', req.requestBy) +
@@ -492,6 +668,7 @@
         field('Onderstel', req.mountType) +
       '</div></div>' +
 
+      '</div><div class="dcol dside">' +
       '<div class="detail-card editable"><div class="detail-card-title">Beheer — Bram / Tom</div><div class="detail-grid">' +
         '<div class="detail-field"><label>Status</label>' + selectHtml('st-' + id, REQUEST_STATUSSEN, req.status) + '</div>' +
         '<div class="detail-field"><label>Toegewezen scherm (serienummer)</label><input type="text" id="scr-' + id + '" list="scrlist" value="' + esc(req.toegewezenScreenID) + '" placeholder="serienummer"></div>' +
@@ -520,7 +697,7 @@
       '</div></div>' +
 
       '<div class="detail-actions"><button class="delete delete-request" data-id="' + id + '">Aanvraag verwijderen</button><button class="save save-request" data-id="' + id + '">Wijzigingen opslaan</button></div>' +
-    '</div>';
+    '</div></div>';
   }
 
   function deleteRequestConfirm(id, btn) {
@@ -616,6 +793,7 @@
   function renderScreens(screens) {
     LATEST_SCREENS = normScreens(screens);
     document.getElementById('tabScrCount').textContent = LATEST_SCREENS.filter(sc => sc.status !== 'uitgeleend').length;
+    renderStats();
     document.getElementById('tabLocCount').textContent = LATEST_SCREENS.filter(sc => sc.status === 'uitgeleend').length;
     fillScreenDatalist();
     applyScreenFilters();
@@ -656,6 +834,8 @@
   function applyScreenFilters() {
     const q = document.getElementById('scrSearch').value.trim().toLowerCase();
     const statusFilter = document.getElementById('scrStatusFilter').value;
+    const poolAll = LATEST_SCREENS.filter(sc => sc.status !== 'uitgeleend');
+    renderChips('scrChips', 'scrStatusFilter', ['', 'beschikbaar', '3105', 'intern'], v => v === '' ? poolAll.length : poolAll.filter(sc => sc.status === v).length);
     const inList = LATEST_SCREENS.filter(sc => sc.status !== 'uitgeleend');
     const filtered = inList.filter(sc => {
       const matchesQ = !q || sv(sc.model).includes(q) || sv(sc.locatie).includes(q) || sv(sc.screenID).includes(q);
@@ -674,28 +854,34 @@
       container.innerHTML = '<div class="empty-state">Geen schermen gevonden voor deze zoekopdracht/filter.</div>';
       return;
     }
-    const grouped = SCR_SORT.key !== 'screenID';
-    let lastGrp = null;
+    const SEC_HINT = { beschikbaar: 'direct inzetbaar', '3105': 'magazijn — reparatie of onderdelen', intern: 'in gebruik binnen Legamaster' };
+    const keyOf = s => SCR_SORT.key === 'model' ? s.model : s.status;
+    let lastGrp = null, lastModel = null;
     screens.forEach(scr => {
       const id = scr.screenID;
-      if (grouped) {
-        const grp = (SCR_SORT.key === 'model' ? '' : scr.status + ' · ') + scr.model;
+      if (SCR_SORT.key !== 'screenID') {
+        const grp = keyOf(scr);
         if (grp !== lastGrp) {
-          lastGrp = grp;
-          const n = screens.filter(s => ((SCR_SORT.key === 'model' ? '' : s.status + ' · ') + s.model) === grp).length;
+          lastGrp = grp; lastModel = null;
+          const n = screens.filter(s => keyOf(s) === grp).length;
           const gh = document.createElement('div');
-          gh.className = 'grp-head';
-          gh.textContent = grp + ' (' + n + ')';
+          if (SCR_SORT.key === 'model') { gh.className = 'grp-head'; gh.textContent = grp + ' (' + n + ')'; }
+          else { gh.className = 'sec-head'; gh.innerHTML = '<span class="sdot ' + esc(grp) + '"></span><b>' + esc(grp.charAt(0).toUpperCase() + grp.slice(1)) + '</b><span class="count">' + n + '</span><span class="hint">' + esc(SEC_HINT[grp] || '') + '</span>'; }
           container.appendChild(gh);
         }
       }
+      const modelCell = (SCR_SORT.key !== 'screenID' && scr.model === lastModel)
+        ? '<div class="model-rep" title="' + esc(scr.model) + '">· ' + esc(scr.model) + '</div>'
+        : '<div class="model-first" title="' + esc(scr.model) + '">' + esc(scr.model) + '</div>';
+      lastModel = scr.model;
       const row = document.createElement('div');
       row.className = 'list-row';
       row.innerHTML =
         '<div class="list-row-summary scr-cols">' +
-          '<div style="font-weight:600;" title="' + esc(id) + '">' + esc(id) + '</div>' +
-          '<div title="' + esc(scr.model) + '">' + esc(scr.model) + '</div>' +
+          modelCell +
+          '<div class="mono" title="' + esc(id) + '">' + esc(id) + '</div>' +
           '<div><span class="status-badge ' + esc(scr.status) + '">' + esc(scr.status) + '</span></div>' +
+          '<div style="color:var(--muted);">' + esc(scr.firmwareVersie || '—') + '</div>' +
           '<div title="' + esc(scr.locatie || '') + '">' + esc(scr.locatie || '—') + '</div>' +
           '<div style="text-align:right;"><button class="toggle-details" data-id="' + esc(id) + '">' + (OPEN_SCREEN_IDS.has(id) ? 'Verberg' : 'Details') + '</button></div>' +
         '</div>' +
@@ -821,11 +1007,11 @@
       row.className = 'list-row';
       row.innerHTML =
         '<div class="list-row-summary loc-cols">' +
-          '<div style="font-weight:600;" title="' + esc(scr.screenID) + '">' + esc(scr.screenID) + '</div>' +
-          '<div title="' + esc(scr.model) + '">' + esc(scr.model) + '</div>' +
+          '<div class="mono" style="font-weight:500;" title="' + esc(scr.screenID) + '">' + esc(scr.screenID) + '</div>' +
+          '<div class="model-first" title="' + esc(scr.model) + '">' + esc(scr.model) + '</div>' +
           '<div title="' + esc(scr.locatie || '') + '"><strong>' + esc(scr.locatie || '—') + '</strong>' + (scr.verantwoordelijke ? '<br><span style="color:var(--muted);font-size:12px;">' + esc(scr.verantwoordelijke) + '</span>' : '') + '</div>' +
           '<div style="color:var(--muted);">' + fmtDate(scr.uitleendatum) + '</div>' +
-          '<div>' + fmtDate(scr.verwachteTerugkomst) + '</div>' +
+          '<div><div style="font-weight:500;">' + fmtDate(scr.verwachteTerugkomst) + '</div>' + dayTag(scr.verwachteTerugkomst, 'back') + '</div>' +
           '<div style="text-align:right;"><button class="back-avail" data-id="' + esc(scr.screenID) + '">Terug: beschikbaar</button></div>' +
         '</div>';
       container.appendChild(row);
