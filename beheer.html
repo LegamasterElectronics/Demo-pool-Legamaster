@@ -231,7 +231,7 @@
   .sec-head .hint { font-size: 13px; color: var(--muted); }
   .sdot { width: 10px; height: 10px; border-radius: 50%; background: #8291A3; }
   .sdot.beschikbaar { background: var(--ok); } .sdot[class~="3105"] { background: var(--navy); } .sdot.intern { background: #8291A3; }
-  .grp-head { padding: 10px 20px; background: #FAFBFD; border-bottom: 1px solid #E6EBF2; color: var(--muted); }
+  .grp-head { padding: 7px 20px; background: #F1F5FA; border-bottom: 1px solid #E6EBF2; color: #3B4A63; font-size: 12px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
   .list-row.just-returned, .list-row.just-returned:nth-child(even) { background: #E8F5EC; box-shadow: inset 3px 0 0 var(--ok); }
   .newtag { font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 600; color: var(--ok); background: #fff; border: 1px solid #B7DFC4; border-radius: 6px; padding: 1px 6px; margin-left: 6px; }
   .model-first { font-weight: 700; } .model-rep { color: #9AA7BA; }
@@ -875,10 +875,15 @@
           container.appendChild(gh);
         }
       }
-      const modelCell = (SCR_SORT.key !== 'screenID' && scr.model === lastModel)
-        ? '<div class="model-rep" title="' + esc(scr.model) + '">· ' + esc(scr.model) + '</div>'
-        : '<div class="model-first" title="' + esc(scr.model) + '">' + esc(scr.model) + '</div>';
+      if (SCR_SORT.key === 'status' && scr.model !== lastModel) {
+        const sameGrp = s => s.status === scr.status && s.model === scr.model;
+        const mh = document.createElement('div');
+        mh.className = 'grp-head';
+        mh.textContent = scr.model + ' (' + screens.filter(sameGrp).length + ')';
+        container.appendChild(mh);
+      }
       lastModel = scr.model;
+      const modelCell = '<div class="model-first" title="' + esc(scr.model) + '">' + esc(scr.model) + '</div>';
       const row = document.createElement('div');
       row.className = 'list-row' + (RETURNED.has(String(id)) ? ' just-returned' : '');
       row.innerHTML =
