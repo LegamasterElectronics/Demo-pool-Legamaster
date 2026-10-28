@@ -259,6 +259,26 @@
   button.save:hover, button.add-screen-btn:hover { background: #002a76; }
   button.delete { border-radius: 8px; font-weight: 600; }
 
+
+  /* Schermen: duidelijk verschil tussen status (sectie) en model (subkop) */
+  #scrRows { background: #F5F7FA; }
+  #scrRows .list-row, #scrRows .list-row:nth-child(even) { background: #fff; }
+  #scrRows .list-row.just-returned { background: #E8F5EC; }
+  .sec-head { margin-top: 18px; padding: 14px 20px; border-top: 1px solid #D5DEEA; border-bottom: 1px solid #D5DEEA; border-left: 5px solid #8291A3; background: #EDF0F4; }
+  #scrRows > .sec-head:first-child { margin-top: 0; }
+  .sec-head b { font-size: 17px; letter-spacing: -.01em; }
+  .sec-head .count { background: #fff; }
+  .sec-head .hint { font-size: 13px; }
+  .sec-head.s-beschikbaar { background: #E3F3E8; border-left-color: var(--ok); }
+  .sec-head.s-beschikbaar b { color: #0F5F2E; }
+  .sec-head.s-3105 { background: #E3ECFA; border-left-color: var(--navy); }
+  .sec-head.s-3105 b { color: var(--navy); }
+  .sec-head.s-intern { background: #ECEFF3; border-left-color: #8291A3; }
+  .sub-head { background: #fff; padding: 12px 20px 6px 40px; font-size: 12.5px; font-weight: 600; color: var(--muted); border-top: 1px solid #E6EBF2; }
+  .sub-head::before { content: '▸'; margin-right: 8px; color: #9AA7BA; }
+  #scrRows .sec-head + .sub-head { border-top: none; }
+  #scrRows .sub-head + .list-row { border-top: none; }
+
   @media (max-width: 900px) {
     .topbar-inner { flex-wrap: wrap; height: auto; padding: 10px 16px; gap: 8px 16px; }
     .tabbar { order: 3; width: 100%; flex-basis: 100%; }
@@ -871,15 +891,16 @@
           const n = screens.filter(s => String(keyOf(s) == null ? '' : keyOf(s)) === grp).length;
           const gh = document.createElement('div');
           if (SCR_SORT.key === 'model') { gh.className = 'grp-head'; gh.textContent = grp + ' (' + n + ')'; }
-          else { gh.className = 'sec-head'; gh.innerHTML = '<span class="sdot ' + esc(grp) + '"></span><b>' + esc(grp ? grp.charAt(0).toUpperCase() + grp.slice(1) : 'Zonder status') + '</b><span class="count">' + n + '</span><span class="hint">' + esc(SEC_HINT[grp] || '') + '</span>'; }
+          else { gh.className = 'sec-head s-' + esc(grp || 'none'); gh.innerHTML = '<span class="sdot ' + esc(grp) + '"></span><b>' + esc(grp ? grp.charAt(0).toUpperCase() + grp.slice(1) : 'Zonder status') + '</b><span class="count">' + n + '</span><span class="hint">' + esc(SEC_HINT[grp] || '') + '</span>'; }
           container.appendChild(gh);
         }
       }
       if (SCR_SORT.key === 'status' && scr.model !== lastModel) {
         const sameGrp = s => s.status === scr.status && s.model === scr.model;
         const mh = document.createElement('div');
-        mh.className = 'grp-head';
-        mh.textContent = scr.model + ' (' + screens.filter(sameGrp).length + ')';
+        mh.className = 'sub-head';
+        const cnt = screens.filter(sameGrp).length;
+        mh.textContent = scr.model + ' · ' + cnt + (cnt === 1 ? ' scherm' : ' schermen');
         container.appendChild(mh);
       }
       lastModel = scr.model;
