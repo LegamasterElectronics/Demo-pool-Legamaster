@@ -95,7 +95,8 @@
   .list-head { position: sticky; top: 0; z-index: 20; box-shadow: 0 1px 0 rgba(0,0,0,.04); background: #fff; font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); font-weight: 700; border-bottom: 1.5px solid var(--text); }
   .req-cols { grid-template-columns: 110px 90px 1.3fr 1.1fr 1.1fr 130px 110px 110px 80px; }
   .scr-cols { grid-template-columns: 190px 1fr 130px 1.4fr 90px; }
-  .loc-cols { grid-template-columns: 190px 1fr 1.4fr 110px 130px; }
+  .loc-cols { grid-template-columns: 190px 1fr 1.4fr 110px 130px 150px; }
+  .grp-head { padding: 8px 18px; font-size: 12px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); background: #eef2f8; border-bottom: 1px solid var(--line, #e3e8ef); }
   .list-head .sortable { cursor: pointer; user-select: none; }
   .list-head .sortable:hover { color: var(--navy); }
   .list-head .sortable i { font-style: normal; color: var(--accent-dark); margin-left: 2px; }
@@ -127,9 +128,9 @@
   .status-badge.geannuleerd, .status-badge.onderhoud, .status-badge.open { background: linear-gradient(180deg,#D13B2E,var(--warn)); }
   .status-badge.opgelost { background: linear-gradient(180deg,#1C9650,var(--ok)); }
 
-  button.toggle-details { background: linear-gradient(180deg,#fff,#FAFBFD); border: 1px solid var(--line); border-radius: var(--radius-sm); padding: 6px 11px; font-size: 12px; cursor: pointer; color: var(--text); font-weight: 700; font-family: inherit; box-shadow: 0 1px 2px rgba(16,24,40,.06); transition: transform .08s ease, border-color .12s ease; }
-  button.toggle-details:hover { border-color: var(--navy); color: var(--navy); }
-  button.toggle-details:active { transform: translateY(1px); }
+  button.toggle-details, button.back-avail { background: linear-gradient(180deg,#fff,#FAFBFD); border: 1px solid var(--line); border-radius: var(--radius-sm); padding: 6px 11px; font-size: 12px; cursor: pointer; color: var(--text); font-weight: 700; font-family: inherit; box-shadow: 0 1px 2px rgba(16,24,40,.06); transition: transform .08s ease, border-color .12s ease; }
+  button.toggle-details:hover, button.back-avail:hover { border-color: var(--navy); color: var(--navy); }
+  button.toggle-details:active, button.back-avail:active { transform: translateY(1px); }
 
   .detail-row { display: none; }
   .detail-wrap { background: var(--grey-bg); padding: 20px 22px; border-top: 1px solid var(--line); display: flex; flex-direction: column; gap: 14px; }
@@ -253,12 +254,13 @@
     <div id="tab-oplocatie" style="display:none;">
       <div class="toolbar">
         <div class="filters">
+          <input type="text" id="locSearch" placeholder="Zoek op serienummer, model, klant of persoon…">
           <span class="count-text" id="locCount"></span>
         </div>
         <button class="refresh" id="locRefresh">↻ Ververs</button>
       </div>
       <div class="list-card">
-        <div class="list-head loc-cols"><div>Serienummer</div><div>Model</div><div>Klant</div><div>Sinds</div><div>Verwacht terug</div></div>
+        <div class="list-head loc-cols"><div>Serienummer</div><div>Model</div><div>Klant</div><div>Sinds</div><div>Verwacht terug</div><div></div></div>
         <div id="locRows"></div>
       </div>
     </div>
@@ -377,7 +379,7 @@
 
   // populate status filter dropdowns once
   document.getElementById('reqStatusFilter').innerHTML += REQUEST_STATUSSEN.map(s => '<option value="' + s + '">' + s + '</option>').join('');
-  document.getElementById('scrStatusFilter').innerHTML += SCREEN_STATUSSEN.map(s => '<option value="' + s + '">' + s + '</option>').join('');
+  document.getElementById('scrStatusFilter').innerHTML += ['beschikbaar', '3105', 'intern'].map(s => '<option value="' + s + '">' + s + '</option>').join('');
 
   // ---- Requests ----
   function loadRequests() {
@@ -604,7 +606,7 @@
   }
 
   // ---- Screens ----
-  let SCR_SORT = { key: '', dir: 1 };
+  let SCR_SORT = { key: 'status', dir: 1 };
   function loadScreens() {
     fetch(APPS_SCRIPT_URL + '?action=getScreens&password=' + encodeURIComponent(PASSWORD))
       .then(r => r.json())
@@ -613,7 +615,7 @@
 
   function renderScreens(screens) {
     LATEST_SCREENS = normScreens(screens);
-    document.getElementById('tabScrCount').textContent = LATEST_SCREENS.length;
+    document.getElementById('tabScrCount').textContent = LATEST_SCREENS.filter(sc => sc.status !== 'uitgeleend').length;
     document.getElementById('tabLocCount').textContent = LATEST_SCREENS.filter(sc => sc.status === 'uitgeleend').length;
     fillScreenDatalist();
     applyScreenFilters();
@@ -624,14 +626,18 @@
     dl.innerHTML = LATEST_SCREENS.map(sc => '<option value="' + esc(sc.screenID) + '">' + esc(sc.model) + ' · ' + esc(sc.status) + '</option>').join('');
   }
 
+  // Volgorde in de Schermen-tab: beschikbaar, 3105, intern (uitgeleend staat alleen onder "Op locatie")
+  const SCREEN_LIST_ORDER = ['beschikbaar', '3105', 'intern'];
+  const cmpText = (x, y) => String(x).localeCompare(String(y), 'nl', { numeric: true });
   function sortScreens(list) {
-    const k = SCR_SORT.key;
-    if (!k) return list;
-    const val = s => k === 'status' ? SCREEN_STATUSSEN.indexOf(s.status) : sv(s[k]);
+    const k = SCR_SORT.key, d = SCR_SORT.dir;
+    const st = s => { const i = SCREEN_LIST_ORDER.indexOf(s.status); return i < 0 ? 99 : i; };
     return list.slice().sort((a, b) => {
-      const x = val(a), y = val(b);
-      const c = (typeof x === 'number') ? x - y : String(x).localeCompare(String(y), 'nl', { numeric: true });
-      return (c || String(a.screenID).localeCompare(String(b.screenID), 'nl', { numeric: true })) * SCR_SORT.dir;
+      let c;
+      if (k === 'screenID') c = cmpText(a.screenID, b.screenID);
+      else if (k === 'model') c = cmpText(a.model, b.model) || st(a) - st(b) || cmpText(a.screenID, b.screenID);
+      else { c = st(a) - st(b) || cmpText(a.model, b.model) || cmpText(a.screenID, b.screenID); }
+      return c * d;
     });
   }
   function updateSortIndicators() {
@@ -650,12 +656,13 @@
   function applyScreenFilters() {
     const q = document.getElementById('scrSearch').value.trim().toLowerCase();
     const statusFilter = document.getElementById('scrStatusFilter').value;
-    const filtered = LATEST_SCREENS.filter(sc => {
+    const inList = LATEST_SCREENS.filter(sc => sc.status !== 'uitgeleend');
+    const filtered = inList.filter(sc => {
       const matchesQ = !q || sv(sc.model).includes(q) || sv(sc.locatie).includes(q) || sv(sc.screenID).includes(q);
       const matchesStatus = !statusFilter || sc.status === statusFilter;
       return matchesQ && matchesStatus;
     });
-    document.getElementById('scrCount').textContent = filtered.length + ' van ' + LATEST_SCREENS.length + ' scherm' + (LATEST_SCREENS.length === 1 ? '' : 'en');
+    document.getElementById('scrCount').textContent = filtered.length + ' van ' + inList.length + ' scherm' + (inList.length === 1 ? '' : 'en');
     updateSortIndicators();
     renderScreenRows(sortScreens(filtered));
   }
@@ -667,8 +674,21 @@
       container.innerHTML = '<div class="empty-state">Geen schermen gevonden voor deze zoekopdracht/filter.</div>';
       return;
     }
+    const grouped = SCR_SORT.key !== 'screenID';
+    let lastGrp = null;
     screens.forEach(scr => {
       const id = scr.screenID;
+      if (grouped) {
+        const grp = (SCR_SORT.key === 'model' ? '' : scr.status + ' · ') + scr.model;
+        if (grp !== lastGrp) {
+          lastGrp = grp;
+          const n = screens.filter(s => ((SCR_SORT.key === 'model' ? '' : s.status + ' · ') + s.model) === grp).length;
+          const gh = document.createElement('div');
+          gh.className = 'grp-head';
+          gh.textContent = grp + ' (' + n + ')';
+          container.appendChild(gh);
+        }
+      }
       const row = document.createElement('div');
       row.className = 'list-row';
       row.innerHTML =
@@ -775,12 +795,19 @@
       .then(data => {
         if (!data.ok) return;
         LATEST_SCREENS = normScreens(data.screens);
-        const onLocation = LATEST_SCREENS.filter(sc => sc.status === 'uitgeleend');
-        document.getElementById('tabLocCount').textContent = onLocation.length;
-        document.getElementById('locCount').textContent = onLocation.length + ' scherm' + (onLocation.length === 1 ? '' : 'en') + ' op locatie';
-        renderLocRows(onLocation);
+        applyLocFilter();
       });
   }
+
+  function applyLocFilter() {
+    const q = document.getElementById('locSearch').value.trim().toLowerCase();
+    const all = LATEST_SCREENS.filter(sc => sc.status === 'uitgeleend');
+    const shown = all.filter(sc => !q || [sc.screenID, sc.model, sc.locatie, sc.verantwoordelijke].some(v => sv(v).includes(q)));
+    document.getElementById('tabLocCount').textContent = all.length;
+    document.getElementById('locCount').textContent = (q ? shown.length + ' van ' + all.length : all.length) + ' scherm' + (all.length === 1 ? '' : 'en') + ' op locatie';
+    renderLocRows(shown);
+  }
+  document.getElementById('locSearch').addEventListener('input', applyLocFilter);
 
   function renderLocRows(screens) {
     const container = document.getElementById('locRows');
@@ -799,9 +826,25 @@
           '<div title="' + esc(scr.locatie || '') + '"><strong>' + esc(scr.locatie || '—') + '</strong>' + (scr.verantwoordelijke ? '<br><span style="color:var(--muted);font-size:12px;">' + esc(scr.verantwoordelijke) + '</span>' : '') + '</div>' +
           '<div style="color:var(--muted);">' + fmtDate(scr.uitleendatum) + '</div>' +
           '<div>' + fmtDate(scr.verwachteTerugkomst) + '</div>' +
+          '<div style="text-align:right;"><button class="back-avail" data-id="' + esc(scr.screenID) + '">Terug: beschikbaar</button></div>' +
         '</div>';
       container.appendChild(row);
     });
+    container.querySelectorAll('button.back-avail').forEach(btn => btn.addEventListener('click', () => backToAvailable(btn.dataset.id, btn)));
+  }
+
+  function backToAvailable(id, btn) {
+    btn.disabled = true; btn.textContent = 'Bezig…';
+    fetch(APPS_SCRIPT_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({
+      action: 'updateScreen', password: PASSWORD, screenId: id,
+      status: 'beschikbaar', locatie: 'Schermen Lochem', verantwoordelijke: '', uitleendatum: '', verwachteTerugkomst: ''
+    }) })
+      .then(r => r.json())
+      .then(data => {
+        if (data.ok) { toast('Scherm ' + id + ' staat weer op beschikbaar'); loadScreens(); renderOpLocatie(); }
+        else { toast('Mislukt: ' + data.error); btn.disabled = false; btn.textContent = 'Terug: beschikbaar'; }
+      })
+      .catch(() => { toast('Mislukt: kan niet verbinden'); btn.disabled = false; btn.textContent = 'Terug: beschikbaar'; });
   }
 
   document.getElementById('locRefresh').addEventListener('click', renderOpLocatie);
