@@ -833,14 +833,30 @@
   // Volgorde in de Schermen-tab: beschikbaar, 3105, intern (uitgeleend staat alleen onder "Op locatie")
   const SCREEN_LIST_ORDER = ['beschikbaar', '3105', 'intern'];
   const cmpText = (x, y) => String(x).localeCompare(String(y), 'nl', { numeric: true });
+  // Modelvolgorde: eerst productlijn (DIS, EVP, …), dan generatie (laatste 2 cijfers: 10, 20, 00, 01),
+  // dan schermgrootte (voorste cijfers: 43, 55, 65 …). Zo staan alle DISxx10 voor alle DISxx20.
+  function modelKey(m) {
+    const t = String(m == null ? '' : m).trim().toUpperCase();
+    const x = t.match(/^([A-Z]+)[\s-]*(\d{3,})/);
+    if (!x) return null;
+    const d = x[2];
+    return { pre: x[1], gen: parseInt(d.slice(-2), 10), size: parseInt(d.slice(0, -2), 10) };
+  }
+  function cmpModel(a, b) {
+    const ka = modelKey(a), kb = modelKey(b);
+    if (ka && kb) return cmpText(ka.pre, kb.pre) || (ka.gen - kb.gen) || (ka.size - kb.size) || cmpText(a, b);
+    if (ka) return -1;
+    if (kb) return 1;
+    return cmpText(a, b);
+  }
   function sortScreens(list) {
     const k = SCR_SORT.key, d = SCR_SORT.dir;
     const st = s => { const i = SCREEN_LIST_ORDER.indexOf(s.status); return i < 0 ? 99 : i; };
     return list.slice().sort((a, b) => {
       let c;
       if (k === 'screenID') c = cmpText(a.screenID, b.screenID);
-      else if (k === 'status') c = st(a) - st(b) || cmpText(a.model, b.model) || cmpText(a.screenID, b.screenID);
-      else c = cmpText(a.model, b.model) || st(a) - st(b) || cmpText(a.screenID, b.screenID);
+      else if (k === 'status') c = st(a) - st(b) || cmpModel(a.model, b.model) || cmpText(a.screenID, b.screenID);
+      else c = cmpModel(a.model, b.model) || st(a) - st(b) || cmpText(a.screenID, b.screenID);
       return c * d;
     });
   }
