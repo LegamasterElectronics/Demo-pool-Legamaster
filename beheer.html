@@ -264,7 +264,8 @@
   #scrRows { background: #F5F7FA; }
   #scrRows .list-row, #scrRows .list-row:nth-child(even) { background: #fff; }
   #scrRows .list-row.just-returned { background: #E8F5EC; }
-  #scrRows .list-row.model-start { border-top: 2px solid #CBD5E3; }
+  .series-line { padding: 7px 20px 5px; font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: #8C9AB0; background: #FAFBFD; border-top: 1px solid #E6EBF2; }
+  #scrRows > .series-line:first-child { border-top: none; }
   .sec-head { margin-top: 18px; padding: 14px 20px; border-top: 1px solid #D5DEEA; border-bottom: 1px solid #D5DEEA; border-left: 5px solid #8291A3; background: #EDF0F4; }
   #scrRows > .sec-head:first-child { margin-top: 0; }
   .sec-head b { font-size: 17px; letter-spacing: -.01em; }
@@ -842,6 +843,8 @@
     const d = x[2];
     return { pre: x[1], gen: parseInt(d.slice(-2), 10), size: parseInt(d.slice(0, -2), 10) };
   }
+  const SERIES_NAMES = { DIS10: 'Discover 2', DIS20: 'Discover 3', ETX30: 'Evolve 2' };
+  const PREFIX_NAMES = { DIS: 'Discover', EVP: 'Evolve Pro', EVD: 'Evolve Dynamic' };
   function cmpModel(a, b) {
     const ka = modelKey(a), kb = modelKey(b);
     if (ka && kb) return cmpText(ka.pre, kb.pre) || (ka.gen - kb.gen) || (ka.size - kb.size) || cmpText(a, b);
@@ -896,14 +899,26 @@
       container.innerHTML = '<div class="empty-state">Geen schermen gevonden voor deze zoekopdracht/filter.</div>';
       return;
     }
-    let lastModel = null;
+    let lastSeries = null;
     screens.forEach(scr => {
       const id = scr.screenID;
-      const newModel = lastModel !== null && scr.model !== lastModel;
-      lastModel = scr.model;
+      if (SCR_SORT.key === 'model') {
+        const mk = modelKey(scr.model);
+        const sk = mk ? mk.pre + mk.gen : '';
+        if (sk !== lastSeries) {
+          lastSeries = sk;
+          const pad = mk ? String(mk.gen).padStart(2, '0') : '';
+          const code = mk ? mk.pre + 'xx' + pad : 'Overig';
+          const name = mk && (SERIES_NAMES[mk.pre + pad] || PREFIX_NAMES[mk.pre]);
+          const sl = document.createElement('div');
+          sl.className = 'series-line';
+          sl.textContent = name ? name + ' · ' + code : code;
+          container.appendChild(sl);
+        }
+      }
       const modelCell = '<div class="model-first" title="' + esc(scr.model) + '">' + esc(scr.model) + '</div>';
       const row = document.createElement('div');
-      row.className = 'list-row' + (newModel ? ' model-start' : '') + (RETURNED.has(String(id)) ? ' just-returned' : '');
+      row.className = 'list-row' + (RETURNED.has(String(id)) ? ' just-returned' : '');
       row.innerHTML =
         '<div class="list-row-summary scr-cols">' +
           modelCell +
