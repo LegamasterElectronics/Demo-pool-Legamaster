@@ -94,7 +94,7 @@
   .list-head, .list-row-summary { display: grid; gap: 10px; padding: 11px 18px; align-items: center; }
   .list-head { position: sticky; top: 0; z-index: 20; box-shadow: 0 1px 0 rgba(0,0,0,.04); background: #fff; font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); font-weight: 700; border-bottom: 1.5px solid var(--text); }
   .req-cols { grid-template-columns: 110px 90px 1.3fr 1.1fr 1.1fr 130px 110px 110px 80px; }
-  .scr-cols { grid-template-columns: 150px 200px 150px 100px 1fr 90px; }
+  .scr-cols { grid-template-columns: 150px 190px 130px 90px 150px 1fr 90px; }
   .loc-cols { grid-template-columns: 190px 1fr 1.4fr 110px 130px 150px; }
   .grp-head { padding: 8px 18px; font-size: 12px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); background: #eef2f8; border-bottom: 1px solid var(--line, #e3e8ef); }
   .list-head .sortable { cursor: pointer; user-select: none; }
@@ -353,7 +353,7 @@
     <div id="tab-screens" style="display:none;">
       <div class="toolbar">
         <div class="filters">
-          <input type="text" id="scrSearch" placeholder="Zoek op serienummer, model of locatie…">
+          <input type="text" id="scrSearch" placeholder="Zoek op serienummer, model, OPS of locatie…">
           <div class="chips" id="scrChips"></div><select id="scrStatusFilter" style="display:none"><option value="">Alle statussen</option></select>
           <span class="count-text" id="scrCount"></span>
         </div>
@@ -381,6 +381,10 @@
             <label>Locatie</label>
             <input type="text" id="newScreenLocatie" placeholder="bv. kantoor Lochem">
           </div>
+          <div>
+            <label>OPS (optioneel)</label>
+            <input type="text" id="newScreenOps" placeholder="bv. ednl-ops111B">
+          </div>
         </div>
         <div class="add-screen-actions">
           <span class="add-screen-err" id="addScreenErr"></span>
@@ -390,7 +394,7 @@
       </div>
 
       <div class="list-card">
-        <div class="list-head scr-cols" id="scrHead"><div class="sortable" data-sort="model">Model <i></i></div><div class="sortable" data-sort="screenID">Serienummer <i></i></div><div class="sortable" data-sort="status">Status <i></i></div><div>Firmware</div><div>Locatie</div><div></div></div>
+        <div class="list-head scr-cols" id="scrHead"><div class="sortable" data-sort="model">Model <i></i></div><div class="sortable" data-sort="screenID">Serienummer <i></i></div><div class="sortable" data-sort="status">Status <i></i></div><div>Firmware</div><div>OPS</div><div>Locatie</div><div></div></div>
         <div id="scrRows"></div>
       </div>
     </div>
@@ -486,7 +490,7 @@
 
   const PAGE_SUBS = {
     requests: 'Wat moet er nu gebeuren? Nieuwe aanvragen staan bovenaan.',
-    screens: 'In het magazijn en intern. Uitgeleende schermen staan onder Op locatie.',
+    screens: 'Alle schermen, ook de uitgeleende. Uitgeleend, met klant en terugkomstdatum, staat apart onder Op locatie.',
     oplocatie: 'Uitgeleende schermen. Die met de eerste terugkomst staan bovenaan.'
   };
   document.getElementById('pageSub').textContent = PAGE_SUBS.requests;
@@ -533,7 +537,7 @@
 
   // populate status filter dropdowns once
   document.getElementById('reqStatusFilter').innerHTML += REQUEST_STATUSSEN.map(s => '<option value="' + s + '">' + s + '</option>').join('');
-  document.getElementById('scrStatusFilter').innerHTML += ['beschikbaar', '3105', 'intern'].map(s => '<option value="' + s + '">' + s + '</option>').join('');
+  document.getElementById('scrStatusFilter').innerHTML += ['beschikbaar', 'uitgeleend', '3105', 'intern'].map(s => '<option value="' + s + '">' + s + '</option>').join('');
 
   // ---- Requests ----
   function loadRequests() {
@@ -819,7 +823,7 @@
 
   function renderScreens(screens) {
     LATEST_SCREENS = normScreens(screens);
-    document.getElementById('tabScrCount').textContent = LATEST_SCREENS.filter(sc => sc.status !== 'uitgeleend').length;
+    document.getElementById('tabScrCount').textContent = LATEST_SCREENS.length;
     renderStats();
     document.getElementById('tabLocCount').textContent = LATEST_SCREENS.filter(sc => sc.status === 'uitgeleend').length;
     fillScreenDatalist();
@@ -832,7 +836,7 @@
   }
 
   // Volgorde in de Schermen-tab: beschikbaar, 3105, intern (uitgeleend staat alleen onder "Op locatie")
-  const SCREEN_LIST_ORDER = ['beschikbaar', '3105', 'intern'];
+  const SCREEN_LIST_ORDER = ['beschikbaar', 'uitgeleend', '3105', 'intern'];
   const cmpText = (x, y) => String(x).localeCompare(String(y), 'nl', { numeric: true });
   // Modelvolgorde: eerst productlijn (DIS, EVP, …), dan generatie (laatste 2 cijfers: 10, 20, 00, 01),
   // dan schermgrootte (voorste cijfers: 43, 55, 65 …). Zo staan alle DISxx10 voor alle DISxx20.
@@ -879,11 +883,11 @@
   function applyScreenFilters() {
     const q = document.getElementById('scrSearch').value.trim().toLowerCase();
     const statusFilter = document.getElementById('scrStatusFilter').value;
-    const poolAll = LATEST_SCREENS.filter(sc => sc.status !== 'uitgeleend');
-    renderChips('scrChips', 'scrStatusFilter', ['', 'beschikbaar', '3105', 'intern'], v => v === '' ? poolAll.length : poolAll.filter(sc => sc.status === v).length);
-    const inList = LATEST_SCREENS.filter(sc => sc.status !== 'uitgeleend');
+    const poolAll = LATEST_SCREENS;
+    renderChips('scrChips', 'scrStatusFilter', ['', 'beschikbaar', 'uitgeleend', '3105', 'intern'], v => v === '' ? poolAll.length : poolAll.filter(sc => sc.status === v).length);
+    const inList = LATEST_SCREENS;
     const filtered = inList.filter(sc => {
-      const matchesQ = !q || sv(sc.model).includes(q) || sv(sc.locatie).includes(q) || sv(sc.screenID).includes(q);
+      const matchesQ = !q || sv(sc.model).includes(q) || sv(sc.locatie).includes(q) || sv(sc.screenID).includes(q) || sv(sc.ops).includes(q);
       const matchesStatus = !statusFilter || sc.status === statusFilter;
       return matchesQ && matchesStatus;
     });
@@ -925,6 +929,7 @@
           '<div class="mono" title="' + esc(id) + '">' + esc(id) + (RETURNED.has(String(id)) ? ' <span class="newtag">net terug</span>' : '') + '</div>' +
           '<div><span class="status-badge ' + esc(scr.status) + '">' + esc(scr.status) + '</span></div>' +
           '<div style="color:var(--muted);">' + esc(scr.firmwareVersie || '—') + '</div>' +
+          '<div class="mono" title="' + esc(scr.ops || '') + '">' + (scr.ops ? esc(scr.ops) : '<span style="color:var(--muted);font-family:Inter,sans-serif;">—</span>') + '</div>' +
           '<div title="' + esc(scr.locatie || '') + '">' + esc(scr.locatie || '—') + '</div>' +
           '<div style="text-align:right;"><button class="toggle-details" data-id="' + esc(id) + '">' + (OPEN_SCREEN_IDS.has(id) ? 'Verberg' : 'Details') + '</button></div>' +
         '</div>' +
@@ -959,6 +964,7 @@
       '<div class="detail-field"><label>Verantwoordelijke</label><input type="text" id="scver-' + id + '" value="' + esc(scr.verantwoordelijke) + '" placeholder="Niet toegewezen"></div>' +
       '<div class="detail-field"><label>Uitleendatum</label>' + dateInput('scuit-' + id, scr.uitleendatum) + '</div>' +
       '<div class="detail-field"><label>Verwacht terug</label>' + dateInput('scterug-' + id, scr.verwachteTerugkomst) + '</div>' +
+      '<div class="detail-field"><label>OPS (ID in dit scherm)</label><input type="text" id="scops-' + id + '" value="' + esc(scr.ops) + '" placeholder="bv. ednl-ops111B"></div>' +
       '<div class="detail-field"><label>Firmware</label><input type="text" id="scfw-' + id + '" value="' + esc(scr.firmwareVersie) + '"></div>' +
       '<div class="detail-field full"><label>Accessoires</label><input type="text" id="scacc-' + id + '" value="' + esc(scr.accessoires) + '" placeholder="AirServer, camera, ..."></div>' +
       '<div class="detail-field"><label>Staat scherm</label><input type="text" id="scstaat-' + id + '" value="' + esc(scr.staatScherm) + '"></div>' +
@@ -976,6 +982,11 @@
     const newId = document.getElementById('scid-' + id).value.trim();
     if (!newId) { toast('Serienummer mag niet leeg zijn'); return; }
     if (newId !== id && LATEST_SCREENS.some(s => String(s.screenID).toLowerCase() === newId.toLowerCase())) { toast('Dit serienummer bestaat al'); return; }
+    const opsVal = document.getElementById('scops-' + id).value.trim();
+    if (opsVal) {
+      const dup = LATEST_SCREENS.find(s => String(s.screenID) !== String(id) && String(s.ops || '').trim().toLowerCase() === opsVal.toLowerCase());
+      if (dup) { toast('OPS ' + opsVal + ' zit al in scherm ' + dup.screenID); return; }
+    }
     btn.disabled = true; btn.textContent = 'Opslaan…';
     const payload = {
       action: 'updateScreen',
@@ -989,6 +1000,7 @@
       uitleendatum: uit,
       verwachteTerugkomst: terug,
       firmwareVersie: document.getElementById('scfw-' + id).value,
+      ops: opsVal,
       accessoires: document.getElementById('scacc-' + id).value,
       staatScherm: document.getElementById('scstaat-' + id).value,
       notities: document.getElementById('scnot-' + id).value
@@ -1104,7 +1116,7 @@
     addScreenCard.style.display = show ? 'block' : 'none';
     addScreenErr.textContent = '';
     if (show) {
-      ['newScreenID', 'newScreenModel', 'newScreenLocatie'].forEach(id => document.getElementById(id).value = '');
+      ['newScreenID', 'newScreenModel', 'newScreenLocatie', 'newScreenOps'].forEach(id => document.getElementById(id).value = '');
       newScreenStatusSelect.value = 'beschikbaar';
       document.getElementById('newScreenID').focus();
     }
@@ -1137,7 +1149,8 @@
       model: model,
       serienummer: screenID,
       status: status,
-      locatie: locatie
+      locatie: locatie,
+      ops: document.getElementById('newScreenOps').value.trim()
     };
 
     fetch(APPS_SCRIPT_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload) })
