@@ -264,6 +264,7 @@
   #scrRows { background: #F5F7FA; }
   #scrRows .list-row, #scrRows .list-row:nth-child(even) { background: #fff; }
   #scrRows .list-row.just-returned { background: #E8F5EC; }
+  #scrRows .list-row.model-start { border-top: 2px solid #CBD5E3; }
   .sec-head { margin-top: 18px; padding: 14px 20px; border-top: 1px solid #D5DEEA; border-bottom: 1px solid #D5DEEA; border-left: 5px solid #8291A3; background: #EDF0F4; }
   #scrRows > .sec-head:first-child { margin-top: 0; }
   .sec-head b { font-size: 17px; letter-spacing: -.01em; }
@@ -808,7 +809,7 @@
   }
 
   // ---- Screens ----
-  let SCR_SORT = { key: 'status', dir: 1 };
+  let SCR_SORT = { key: 'model', dir: 1 };
   function loadScreens() {
     fetch(APPS_SCRIPT_URL + '?action=getScreens&password=' + encodeURIComponent(PASSWORD))
       .then(r => r.json())
@@ -838,8 +839,8 @@
     return list.slice().sort((a, b) => {
       let c;
       if (k === 'screenID') c = cmpText(a.screenID, b.screenID);
-      else if (k === 'model') c = cmpText(a.model, b.model) || st(a) - st(b) || cmpText(a.screenID, b.screenID);
-      else { c = st(a) - st(b) || cmpText(a.model, b.model) || cmpText(a.screenID, b.screenID); }
+      else if (k === 'status') c = st(a) - st(b) || cmpText(a.model, b.model) || cmpText(a.screenID, b.screenID);
+      else c = cmpText(a.model, b.model) || st(a) - st(b) || cmpText(a.screenID, b.screenID);
       return c * d;
     });
   }
@@ -879,34 +880,14 @@
       container.innerHTML = '<div class="empty-state">Geen schermen gevonden voor deze zoekopdracht/filter.</div>';
       return;
     }
-    const SEC_HINT = { beschikbaar: 'direct inzetbaar', '3105': 'magazijn — reparatie of onderdelen', intern: 'in gebruik binnen Legamaster' };
-    const keyOf = s => SCR_SORT.key === 'model' ? s.model : s.status;
-    let lastGrp = null, lastModel = null;
+    let lastModel = null;
     screens.forEach(scr => {
       const id = scr.screenID;
-      if (SCR_SORT.key !== 'screenID') {
-        const grp = String(keyOf(scr) == null ? '' : keyOf(scr));
-        if (grp !== lastGrp) {
-          lastGrp = grp; lastModel = null;
-          const n = screens.filter(s => String(keyOf(s) == null ? '' : keyOf(s)) === grp).length;
-          const gh = document.createElement('div');
-          if (SCR_SORT.key === 'model') { gh.className = 'grp-head'; gh.textContent = grp + ' (' + n + ')'; }
-          else { gh.className = 'sec-head s-' + esc(grp || 'none'); gh.innerHTML = '<span class="sdot ' + esc(grp) + '"></span><b>' + esc(grp ? grp.charAt(0).toUpperCase() + grp.slice(1) : 'Zonder status') + '</b><span class="count">' + n + '</span><span class="hint">' + esc(SEC_HINT[grp] || '') + '</span>'; }
-          container.appendChild(gh);
-        }
-      }
-      if (SCR_SORT.key === 'status' && scr.model !== lastModel) {
-        const sameGrp = s => s.status === scr.status && s.model === scr.model;
-        const mh = document.createElement('div');
-        mh.className = 'sub-head';
-        const cnt = screens.filter(sameGrp).length;
-        mh.textContent = scr.model + ' · ' + cnt + (cnt === 1 ? ' scherm' : ' schermen');
-        container.appendChild(mh);
-      }
+      const newModel = lastModel !== null && scr.model !== lastModel;
       lastModel = scr.model;
       const modelCell = '<div class="model-first" title="' + esc(scr.model) + '">' + esc(scr.model) + '</div>';
       const row = document.createElement('div');
-      row.className = 'list-row' + (RETURNED.has(String(id)) ? ' just-returned' : '');
+      row.className = 'list-row' + (newModel ? ' model-start' : '') + (RETURNED.has(String(id)) ? ' just-returned' : '');
       row.innerHTML =
         '<div class="list-row-summary scr-cols">' +
           modelCell +
