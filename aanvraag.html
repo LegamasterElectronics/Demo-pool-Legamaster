@@ -654,7 +654,13 @@
   });
 
   // ---------- Init ----------
-  applyLanguage(sessionStorage.getItem('demopool_lang') || 'en');
+  (function () {
+    // Taalkeuze: eerst wat deze bezoeker in dit tabblad koos, anders de taal van de browser (NL/DE/FR), anders EN.
+    let saved = null;
+    try { saved = sessionStorage.getItem('demopool_lang'); } catch (e) {}
+    const nav = String((navigator.languages && navigator.languages[0]) || navigator.language || 'en').slice(0, 2).toLowerCase();
+    applyLanguage(saved || (['nl', 'de', 'fr'].indexOf(nav) >= 0 ? nav : 'en'));
+  })();
   showStep(0);
 </script>
 
