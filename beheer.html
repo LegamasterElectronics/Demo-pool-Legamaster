@@ -182,7 +182,7 @@
   .page-head h2 { font-size: 26px; letter-spacing: -.02em; color: var(--text); }
   .page-sub { margin-top: 4px; font-size: 14px; color: var(--muted); }
 
-  .stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; margin-bottom: 20px; }
+  .stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-bottom: 20px; }
   .stat { background: #fff; border: 1px solid #E1E7F0; border-radius: 12px; padding: 16px 18px; }
   .stat.warn { border-top: 3px solid var(--accent); }
   .stat .lbl { font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); }
@@ -422,7 +422,7 @@
   // Vul dit in na het deployen van de Apps Script Web App:
   const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwW47To7cT25obf3vAOVja0q42K3Hq6XWPyHr9R_lrz48llx8-hpR_hRAw3zPPyiUZ3/exec';
 
-  const REQUEST_STATUSSEN = ['nieuw', 'toegewezen', 'bevestigd', 'afgerond', 'geannuleerd'];
+  const REQUEST_STATUSSEN = ['nieuw', 'bevestigd', 'afgerond', 'geannuleerd'];
   const SCREEN_STATUSSEN = ['beschikbaar', 'uitgeleend', 'intern', '3105'];
   const TRANSPORT_NOTES = {
     'Legamaster Netherlands': ['Zelf uitrijden (goedkoper).'],
@@ -587,12 +587,13 @@
     const card = (cls, label, num, sub) => '<div class="stat ' + cls + '"><div class="lbl">' + label + '</div><div class="num">' + num + '</div><div class="sub">' + sub + '</div></div>';
     box.innerHTML =
       card('warn', 'Nieuw — actie nodig', n('nieuw'), soon ? soon + ' start binnen ' + URGENT_DAYS + ' dagen' : 'geen haast') +
-      card('', 'Scherm toegewezen', n('toegewezen'), 'wacht op bevestiging') +
       card('', 'Bevestigd', n('bevestigd'), 'klaar voor verzending') +
       card('', 'Beschikbaar in pool', avail, 'schermen direct inzetbaar');
   }
 
   function renderRequests(requests) {
+    // Oude status 'toegewezen' bestaat niet meer: telt als bevestigd.
+    requests.forEach(r => { if (r.status === 'toegewezen') r.status = 'bevestigd'; });
     LATEST_REQUESTS = requests;
     document.getElementById('tabReqCount').textContent = requests.length;
     renderStats();
@@ -630,7 +631,7 @@
           '<div title="' + esc(req.shipCompanyName) + '"><strong>' + esc(req.shipCompanyName) + '</strong><br><span style="color:var(--muted);font-size:12px;">' + esc(req.organisation) + '</span></div>' +
           '<div title="' + esc(req.demoProduct) + '">' + esc(req.demoProduct) + '</div>' +
           '<div>' + badge('Air', req.airServerNodig) + badge('PC', req.demoPCNodig) + badge('Nav', req.navigatorNodig) + badge('Cam', req.cameraNodig) + '</div>' +
-          '<div style="font-size:13px;"><div style="white-space:nowrap;font-weight:500;">' + fmtDate(req.dateArrive) + ' → ' + fmtDate(req.datePickup) + '</div>' + (['nieuw', 'toegewezen', 'bevestigd'].indexOf(req.status) >= 0 ? dayTag(req.dateArrive, 'start') : '') + '</div>' +
+          '<div style="font-size:13px;"><div style="white-space:nowrap;font-weight:500;">' + fmtDate(req.dateArrive) + ' → ' + fmtDate(req.datePickup) + '</div>' + (['nieuw', 'bevestigd'].indexOf(req.status) >= 0 ? dayTag(req.dateArrive, 'start') : '') + '</div>' +
           '<div><span class="status-badge ' + esc(req.status) + '">' + esc(req.status) + '</span></div>' +
           '<div class="mono" title="' + esc(req.toegewezenScreenID || '') + '">' + esc(req.toegewezenScreenID || '—') + '</div>' +
           '<div style="text-align:right;"><button class="toggle-details" data-id="' + id + '">' + (OPEN_REQUEST_IDS.has(id) ? 'Verberg' : 'Details') + '</button></div>' +
@@ -774,9 +775,34 @@
       loadingPostalCity: document.getElementById('lpc-' + id).value,
       loadingCountry: document.getElementById('lco-' + id).value
     };
-    fetch(APPS_SCRIPT_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload) })
-      .then(r => r.json())
-      .then(data => { toast(data.ok ? 'Aanvraag bijgewerkt' : 'Mislukt: ' + data.error); if (data.ok) { OPEN_REQUEST_IDS.add(id); loadRequests(); } })
+    // Nieuw scherm gekozen? Dan aanbieden om dat scherm meteen op uitgeleend te zetten met de gegevens van de aanvraag.
+    const req0 = LATEST_REQUESTS.find(r => String(r.requestID) === String(id)) || {};
+    const newScr = String(payload.toegewezenScreenID || '').trim();
+    const scr0 = newScr ? LATEST_SCREENS.find(s => String(s.screenID) === newScr) : null;
+    let lendPayload = null;
+    if (scr0 && newScr !== String(req0.toegewezenScreenID || '').trim() && ['afgerond', 'geannuleerd'].indexOf(payload.status) < 0) {
+      if (scr0.status === 'uitgeleend') {
+        toast('Let op: scherm ' + newScr + ' staat al op uitgeleend (' + (scr0.locatie || 'onbekende locatie') + ')');
+      } else {
+        const loc = [req0.shipCompanyName, req0.shipPostalCity].filter(Boolean).join(', ');
+        const wie = req0.responsibleSalesTeamMember || req0.requestBy || '';
+        if (confirm('Scherm ' + newScr + ' ook op "uitgeleend" zetten?\n\nLocatie: ' + loc + '\nVerantwoordelijke: ' + wie + '\nUitleen: ' + fmtDate(arrIso) + ' → ' + fmtDate(pckIso))) {
+          lendPayload = { action: 'updateScreen', password: PASSWORD, screenId: newScr, status: 'uitgeleend', locatie: loc, verantwoordelijke: wie, uitleendatum: arrIso, verwachteTerugkomst: pckIso };
+        }
+      }
+    }
+    const post = p => fetch(APPS_SCRIPT_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(p) }).then(r => r.json());
+    post(payload)
+      .then(data => {
+        if (!data.ok) { toast('Mislukt: ' + data.error); return; }
+        OPEN_REQUEST_IDS.add(id);
+        if (!lendPayload) { toast('Aanvraag bijgewerkt'); loadRequests(); loadScreens && loadScreens(); return; }
+        return post(lendPayload).then(d2 => {
+          toast(d2.ok ? 'Aanvraag bijgewerkt en scherm ' + newScr + ' staat op uitgeleend' : 'Aanvraag opgeslagen, maar scherm bijwerken mislukte: ' + d2.error);
+          loadRequests(); loadScreens && loadScreens();
+        });
+      })
+      .catch(() => toast('Mislukt: kan niet verbinden'))
       .finally(() => { btn.disabled = false; btn.textContent = 'Wijzigingen opslaan'; });
   }
 
