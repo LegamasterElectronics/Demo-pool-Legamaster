@@ -275,17 +275,18 @@
           <label for="demoProduct"><span data-i18n="demoProduct">Demo product</span> <span class="req-mark">*</span></label>
           <select id="demoProduct" data-required="true"><option value="" data-i18n="chooseProduct">Choose a product…</option></select>
         </div>
-        <div>
+        <div id="mountWrap">
           <label for="mountType"><span data-i18n="mountType">Mount / base</span> <span class="req-mark">*</span></label>
           <select id="mountType" data-required="true"><option value="" data-i18n="chooseMount">Choose a mount…</option></select>
         </div>
-        <div>
+        <div id="extrasWrap">
           <label data-i18n="extras">Extras required</label>
           <div class="extras-grid" id="extrasGrid">
             <div class="extra-tile" id="pillAir" data-key="airServerNodig"><span data-i18n="airserver">AirServer</span><div class="box"></div></div>
             <div class="extra-tile" id="pillPC" data-key="demoPCNodig"><span data-i18n="demoPC">Demo PC</span><div class="box"></div></div>
             <div class="extra-tile" id="pillNav" data-key="navigatorNodig"><span data-i18n="navigator">Navigator</span><div class="box"></div></div>
             <div class="extra-tile" id="pillCam" data-key="cameraNodig"><span data-i18n="camera">4K camera</span><div class="box"></div></div>
+            <div class="extra-tile" id="pillBtn" data-key="airServerButtonNodig"><span data-i18n="airserverButton">AirServer Button</span><div class="box"></div></div>
           </div>
         </div>
       </div>
@@ -343,6 +344,7 @@
       mountType: 'Mount / base', chooseMount: 'Choose a mount…',
       mountLabels: { 'Flightcase met EHA-onderstel': 'Flightcase with EHA base', 'In box op pallet': 'In box on pallet' },
       extras: 'Extras required', airserver: 'AirServer', demoPC: 'Demo PC', navigator: 'Navigator', camera: '4K camera',
+      airserverButton: 'AirServer Button', buttonOnly: 'AirServer Button only (no screen)',
       sectionPeriod: 'Period', periodSub: 'Maximum demo period is {weeks} weeks',
       dateArrive: 'Date product must arrive', datePickup: 'Date product must be picked up',
       periodWarningOrder: 'Pickup date is before the arrival date — please check the dates.',
@@ -369,6 +371,7 @@
       mountType: 'Onderstel', chooseMount: 'Kies een onderstel…',
       mountLabels: { 'Flightcase met EHA-onderstel': 'Flightcase met EHA-onderstel', 'In box op pallet': 'In box op pallet' },
       extras: 'Extra benodigdheden', airserver: 'AirServer', demoPC: 'Demo PC', navigator: 'Navigator', camera: '4K camera',
+      airserverButton: 'AirServer Button', buttonOnly: 'Alleen AirServer Button (zonder scherm)',
       sectionPeriod: 'Periode', periodSub: 'Maximale demoperiode is {weeks} weken',
       dateArrive: 'Datum aankomst product', datePickup: 'Datum ophalen product',
       periodWarningOrder: 'Ophaaldatum ligt vóór de aankomstdatum — controleer de data.',
@@ -395,6 +398,7 @@
       mountType: 'Halterung / Ständer', chooseMount: 'Halterung auswählen…',
       mountLabels: { 'Flightcase met EHA-onderstel': 'Flightcase mit EHA-Ständer', 'In box op pallet': 'Im Karton auf Palette' },
       extras: 'Zusätzlich benötigtes Zubehör', airserver: 'AirServer', demoPC: 'Demo-PC', navigator: 'Navigator', camera: '4K-Kamera',
+      airserverButton: 'AirServer Button', buttonOnly: 'Nur AirServer Button (ohne Display)',
       sectionPeriod: 'Zeitraum', periodSub: 'Maximale Demodauer: {weeks} Wochen',
       dateArrive: 'Gewünschtes Anlieferdatum', datePickup: 'Gewünschtes Abholdatum',
       periodWarningOrder: 'Das Abholdatum liegt vor dem Anlieferdatum — bitte Termine prüfen.',
@@ -421,6 +425,7 @@
       mountType: 'Support / socle', chooseMount: 'Choisir un support…',
       mountLabels: { 'Flightcase met EHA-onderstel': 'Flightcase avec base EHA', 'In box op pallet': 'En boîte sur palette' },
       extras: 'Accessoires nécessaires', airserver: 'AirServer', demoPC: 'PC de démo', navigator: 'Navigator', camera: 'Caméra 4K',
+      airserverButton: 'AirServer Button', buttonOnly: 'AirServer Button seul (sans écran)',
       sectionPeriod: 'Période', periodSub: 'La durée maximale de démonstration est de {weeks} semaines',
       dateArrive: "Date d'arrivée du produit", datePickup: 'Date de reprise du produit',
       periodWarningOrder: "La date de reprise précède la date d'arrivée — veuillez vérifier les dates.",
@@ -480,6 +485,7 @@
   const orgSelect = document.getElementById('organisation');
   const productSelect = document.getElementById('demoProduct');
   const mountSelect = document.getElementById('mountType');
+  const BUTTON_PRODUCT = 'AirServer Button';
 
   fetch(APPS_SCRIPT_URL + '?action=getFormOptions')
     .then(r => r.json())
@@ -493,10 +499,26 @@
       document.getElementById('periodSub').textContent = t('periodSub').replace('{weeks}', Math.round(MAX_DEMO_DAYS / 7));
       data.organisations.forEach(o => { const opt = document.createElement('option'); opt.value = o; opt.textContent = o; orgSelect.appendChild(opt); });
       data.demoProducts.forEach(p => { const opt = document.createElement('option'); opt.value = p; opt.textContent = p; productSelect.appendChild(opt); });
+      const bo = document.createElement('option'); bo.value = BUTTON_PRODUCT; bo.setAttribute('data-i18n', 'buttonOnly'); bo.textContent = t('buttonOnly'); productSelect.appendChild(bo);
       LAST_MOUNT_TYPES = data.mountTypes || [];
       renderMountOptions();
     })
     .catch(() => { /* options failed to load, form remains usable */ });
+
+  // Alleen de AirServer Button gekozen: onderstel en extra's zijn niet van toepassing.
+  function applyProductMode() {
+    const only = productSelect.value === BUTTON_PRODUCT;
+    document.getElementById('mountWrap').style.display = only ? 'none' : '';
+    document.getElementById('extrasWrap').style.display = only ? 'none' : '';
+    if (only) {
+      mountSelect.value = '';
+      mountSelect.setAttribute('data-required', 'false');
+      document.querySelectorAll('.extra-tile').forEach(p => p.classList.remove('active'));
+    } else {
+      mountSelect.setAttribute('data-required', 'true');
+    }
+  }
+  productSelect.addEventListener('change', applyProductMode);
 
   // ---------- Extras toggle tiles ----------
   document.querySelectorAll('.extra-tile').forEach(tile => {
@@ -622,6 +644,7 @@
       demoPCNodig: extraChecked('pillPC'),
       navigatorNodig: extraChecked('pillNav'),
       cameraNodig: extraChecked('pillCam'),
+      airServerButtonNodig: extraChecked('pillBtn'),
       dateArrive: arriveInput.value,
       datePickup: pickupInput.value,
       remarks: document.getElementById('remarks').value.trim()
@@ -639,6 +662,7 @@
           msg.className = 'msg ok';
           form.reset();
           document.querySelectorAll('.extra-tile').forEach(p => p.classList.remove('active'));
+          applyProductMode();
           periodWarning.style.display = 'none';
           visited.fill(false); visited[0] = true;
           showStep(0);
