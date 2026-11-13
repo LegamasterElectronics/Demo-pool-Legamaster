@@ -96,6 +96,10 @@
   .req-cols { grid-template-columns: 110px 90px 1.3fr 1.1fr 1.1fr 130px 110px 110px 80px; }
   .scr-cols { grid-template-columns: 150px 190px 130px 90px 150px 1fr 90px; }
   .loc-cols { grid-template-columns: 190px 1fr 1.4fr 110px 130px 150px; }
+  .acc-cols { grid-template-columns: 150px minmax(0,1fr) minmax(0,1.5fr) 190px 170px; }
+  .acc-sub { font-size: 12px; color: var(--muted); }
+  .acc-lines { font-size: 12px; line-height: 1.35; }
+  .acc-lines span { color: var(--muted); font-family: Inter, sans-serif; margin-right: 4px; }
   .grp-head { padding: 8px 18px; font-size: 12px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); background: #eef2f8; border-bottom: 1px solid var(--line, #e3e8ef); }
   .list-head .sortable { cursor: pointer; user-select: none; }
   .list-head .sortable:hover { color: var(--navy); }
@@ -155,7 +159,7 @@
   .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: var(--text); color: #fff; padding: 10px 18px; border-radius: var(--radius); font-size: 12.5px; font-weight: 600; box-shadow: 0 4px 16px rgba(0,0,0,.2); display: none; z-index: 30; }
 
 
-  @media (max-width: 900px) { .req-cols, .scr-cols, .loc-cols { grid-template-columns: 1fr; } .list-head { display: none; } .tab { padding: 12px 12px; } }
+  @media (max-width: 900px) { .req-cols, .scr-cols, .loc-cols, .acc-cols { grid-template-columns: 1fr; } .list-head { display: none; } .tab { padding: 12px 12px; } }
 
   /* ══ Ontwerp v2 (Design-sessie okt 2026): rustiger, meer overzicht ══ */
   body { background: #F5F7FA; background-image: none; font-size: 14px; -webkit-font-smoothing: antialiased; letter-spacing: -0.003em; }
@@ -322,6 +326,7 @@
       <button class="tab active" data-tab="requests">Aanvragen <span class="count" id="tabReqCount">0</span></button>
       <button class="tab" data-tab="screens">Schermen <span class="count" id="tabScrCount">0</span></button>
       <button class="tab" data-tab="oplocatie">Op locatie <span class="count" id="tabLocCount">0</span></button>
+      <button class="tab" data-tab="accessoires">Accessoires <span class="count" id="tabAccCount">0</span></button>
     </div>
   </nav>
       <span class="admin-badge"><i class="av">B</i>Beheerder</span>
@@ -338,7 +343,7 @@
       <div class="stats" id="reqStats"></div>
       <div class="toolbar">
         <div class="filters">
-          <input type="text" id="reqSearch" placeholder="Zoek op klant of organisatie…">
+          <input type="text" id="reqSearch" placeholder="Zoek op klant, organisatie of button-serienummer…">
           <div class="chips" id="reqChips"></div><select id="reqStatusFilter" style="display:none"><option value="">Alle statussen</option></select>
           <span class="count-text" id="reqCount"></span>
         </div>
@@ -353,7 +358,7 @@
     <div id="tab-screens" style="display:none;">
       <div class="toolbar">
         <div class="filters">
-          <input type="text" id="scrSearch" placeholder="Zoek op serienummer, model, OPS of locatie…">
+          <input type="text" id="scrSearch" placeholder="Zoek op serienummer, model, OPS, AirServer of locatie…">
           <div class="chips" id="scrChips"></div><select id="scrStatusFilter" style="display:none"><option value="">Alle statussen</option></select>
           <span class="count-text" id="scrCount"></span>
         </div>
@@ -381,10 +386,6 @@
             <label>Locatie</label>
             <input type="text" id="newScreenLocatie" placeholder="bv. kantoor Lochem">
           </div>
-          <div>
-            <label>OPS (optioneel)</label>
-            <input type="text" id="newScreenOps" placeholder="bv. ednl-ops111B">
-          </div>
         </div>
         <div class="add-screen-actions">
           <span class="add-screen-err" id="addScreenErr"></span>
@@ -394,7 +395,7 @@
       </div>
 
       <div class="list-card">
-        <div class="list-head scr-cols" id="scrHead"><div class="sortable" data-sort="model">Model <i></i></div><div class="sortable" data-sort="screenID">Serienummer <i></i></div><div class="sortable" data-sort="status">Status <i></i></div><div>Firmware</div><div>OPS</div><div>Locatie</div><div></div></div>
+        <div class="list-head scr-cols" id="scrHead"><div class="sortable" data-sort="model">Model <i></i></div><div class="sortable" data-sort="screenID">Serienummer <i></i></div><div class="sortable" data-sort="status">Status <i></i></div><div>Firmware</div><div>Accessoires</div><div>Locatie</div><div></div></div>
         <div id="scrRows"></div>
       </div>
     </div>
@@ -410,6 +411,40 @@
       <div class="list-card">
         <div class="list-head loc-cols"><div>Serienummer</div><div>Model</div><div>Klant</div><div>Sinds</div><div>Verwacht terug</div><div></div></div>
         <div id="locRows"></div>
+      </div>
+    </div>
+
+    <div id="tab-accessoires" style="display:none;">
+      <div class="stats" id="accStats"></div>
+      <div class="toolbar">
+        <div class="filters">
+          <input type="text" id="accSearch" placeholder="Zoek op serienummer, scherm of locatie…">
+          <div class="chips" id="accChips"></div><select id="accTypeFilter" style="display:none"><option value="">Alle</option></select>
+          <span class="count-text" id="accCount"></span>
+        </div>
+        <div style="display:flex; gap:8px;">
+          <button class="add-screen-btn" id="addAccToggle">+ Nieuw accessoire</button>
+          <button class="refresh" id="accRefresh">↻ Ververs</button>
+        </div>
+      </div>
+
+      <div class="add-screen-card" id="addAccCard" style="display:none;">
+        <div class="add-screen-grid">
+          <div><label>Type *</label><select id="newAccType"></select></div>
+          <div><label>Serienummer(s) *</label><input type="text" id="newAccID" placeholder="meerdere? scheid met komma"></div>
+          <div><label>Gekoppeld aan scherm (optioneel)</label><input type="text" id="newAccScherm" list="scrlist" placeholder="serienummer scherm"></div>
+          <div><label>Notities</label><input type="text" id="newAccNotities"></div>
+        </div>
+        <div class="add-screen-actions">
+          <span class="add-screen-err" id="addAccErr"></span>
+          <button class="cancel" id="addAccCancel">Annuleren</button>
+          <button class="save" id="addAccSubmit">Toevoegen</button>
+        </div>
+      </div>
+
+      <div class="list-card">
+        <div class="list-head acc-cols" id="accHead"><div class="sortable" data-sort="type">Type <i></i></div><div class="sortable" data-sort="id">Serienummer <i></i></div><div class="sortable" data-sort="where">Waar <i></i></div><div>Scherm</div><div></div></div>
+        <div id="accRows"></div>
       </div>
     </div>
 
@@ -476,6 +511,7 @@
           renderRequests(data.requests);
           focusDeepLink();
           loadScreens();
+          loadAccessories();
         } else {
           pwErr.textContent = 'Onjuist wachtwoord.';
         }
@@ -491,7 +527,8 @@
   const PAGE_SUBS = {
     requests: 'Wat moet er nu gebeuren? Nieuwe aanvragen staan bovenaan.',
     screens: 'Alle schermen, ook de uitgeleende. Uitgeleend, met klant en terugkomstdatum, staat apart onder Op locatie.',
-    oplocatie: 'Uitgeleende schermen. Die met de eerste terugkomst staan bovenaan.'
+    oplocatie: 'Uitgeleende schermen. Die met de eerste terugkomst staan bovenaan.',
+    accessoires: 'AirServers, AirServer Buttons en OPS\'en op serienummer. Koppel ze aan een demoscherm om te zien wat er mee gaat.'
   };
   document.getElementById('pageSub').textContent = PAGE_SUBS.requests;
 
@@ -507,6 +544,8 @@
       document.getElementById('tab-requests').style.display = tab.dataset.tab === 'requests' ? 'block' : 'none';
       document.getElementById('tab-screens').style.display = tab.dataset.tab === 'screens' ? 'block' : 'none';
       document.getElementById('tab-oplocatie').style.display = tab.dataset.tab === 'oplocatie' ? 'block' : 'none';
+      document.getElementById('tab-accessoires').style.display = tab.dataset.tab === 'accessoires' ? 'block' : 'none';
+      if (tab.dataset.tab === 'accessoires') { loadScreens(); loadAccessories(); }
       if (tab.dataset.tab === 'screens') loadScreens();
       if (tab.dataset.tab === 'oplocatie') renderOpLocatie();
     });
@@ -605,7 +644,7 @@
     const q = document.getElementById('reqSearch').value.trim().toLowerCase();
     const statusFilter = document.getElementById('reqStatusFilter').value;
     const filtered = LATEST_REQUESTS.filter(r => {
-      const matchesQ = !q || sv(r.shipCompanyName).includes(q) || sv(r.organisation).includes(q) || sv(r.requestID).includes(q);
+      const matchesQ = !q || sv(r.shipCompanyName).includes(q) || sv(r.organisation).includes(q) || sv(r.requestID).includes(q) || sv(r.buttonSerienummers).includes(q);
       const matchesStatus = !statusFilter || r.status === statusFilter;
       return matchesQ && matchesStatus;
     });
@@ -630,7 +669,7 @@
           '<div style="color:var(--muted);">' + fmtDate(req.timestamp) + '</div>' +
           '<div title="' + esc(req.shipCompanyName) + '"><strong>' + esc(req.shipCompanyName) + '</strong><br><span style="color:var(--muted);font-size:12px;">' + esc(req.organisation) + '</span></div>' +
           '<div title="' + esc(req.demoProduct) + '">' + esc(req.demoProduct) + '</div>' +
-          '<div>' + badge('Air', req.airServerNodig) + badge('PC', req.demoPCNodig) + badge('Nav', req.navigatorNodig) + badge('Cam', req.cameraNodig) + badge('Btn', req.airServerButtonNodig) + '</div>' +
+          '<div>' + badge('Air', req.airServerNodig) + badge('PC', req.demoPCNodig) + badge('Nav', req.navigatorNodig) + badge('Cam', req.cameraNodig) + (hasButton(req) ? '<span class="badge on" title="' + esc(req.buttonSerienummers ? 'Button: ' + req.buttonSerienummers : 'Button: nog geen serienummer ingevuld') + '">Btn' + (req.buttonSerienummers ? ' ✓' : '') + '</span>' : badge('Btn', false)) + '</div>' +
           '<div style="font-size:13px;"><div style="white-space:nowrap;font-weight:500;">' + fmtDate(req.dateArrive) + ' → ' + fmtDate(req.datePickup) + '</div>' + (['nieuw', 'bevestigd'].indexOf(req.status) >= 0 ? dayTag(req.dateArrive, 'start') : '') + '</div>' +
           '<div><span class="status-badge ' + esc(req.status) + '">' + esc(req.status) + '</span></div>' +
           '<div class="mono" title="' + esc(req.toegewezenScreenID || '') + '">' + esc(req.toegewezenScreenID || '—') + '</div>' +
@@ -667,6 +706,9 @@
     return '<div class="transport-notice">' + notes.map(n => '<div>' + esc(n) + '</div>').join('') + '</div>';
   }
 
+  // Hoort er een AirServer Button bij deze aanvraag (los product of als extra)?
+  function hasButton(req) { return req.demoProduct === 'AirServer Button' || req.airServerButtonNodig === 'Ja' || req.airServerButtonNodig === true; }
+
   function requestDetailHtml(req) {
     const id = req.requestID;
     function field(label, value) {
@@ -702,7 +744,8 @@
       '</div><div class="dcol dside">' +
       '<div class="detail-card editable"><div class="detail-card-title">Beheer — Bram / Tom</div><div class="detail-grid">' +
         '<div class="detail-field"><label>Status</label>' + selectHtml('st-' + id, REQUEST_STATUSSEN, req.status) + '</div>' +
-        '<div class="detail-field"><label>Toegewezen scherm (serienummer)</label><input type="text" id="scr-' + id + '" list="scrlist" value="' + esc(req.toegewezenScreenID) + '" placeholder="serienummer"></div>' +
+        '<div class="detail-field"><label>Toegewezen scherm (serienummer)</label><input type="text" id="scr-' + id + '" list="scrlist" value="' + esc(req.toegewezenScreenID) + '" placeholder="serienummer"><div class="acc-sub">' + reqScreenAccHtml(req.toegewezenScreenID) + '</div></div>' +
+        (hasButton(req) ? '<div class="detail-field full"><label>AirServer Button — serienummer(s)</label><input type="text" id="btn-' + id + '" list="btnlist" value="' + esc(req.buttonSerienummers) + '" placeholder="bv. 123456, 123457"></div>' : '') +
         '<div class="detail-field"><label>Aankomst (aan te passen)</label>' + dateInput('ar-' + id, req.dateArrive) + '</div>' +
         '<div class="detail-field"><label>Ophalen (aan te passen)</label>' + dateInput('pk-' + id, req.datePickup) + '</div>' +
         '<div class="detail-field full"><label>Notities Bram</label><input type="text" id="nt-' + id + '" value="' + esc(req.notitiesBram) + '"></div>' +
@@ -775,6 +818,8 @@
       loadingPostalCity: document.getElementById('lpc-' + id).value,
       loadingCountry: document.getElementById('lco-' + id).value
     };
+    const btnEl = document.getElementById('btn-' + id);
+    if (btnEl) payload.buttonSerienummers = btnEl.value.trim();
     // Nieuw scherm gekozen? Dan aanbieden om dat scherm meteen op uitgeleend te zetten met de gegevens van de aanvraag.
     const req0 = LATEST_REQUESTS.find(r => String(r.requestID) === String(id)) || {};
     const newScr = String(payload.toegewezenScreenID || '').trim();
@@ -913,7 +958,7 @@
     renderChips('scrChips', 'scrStatusFilter', ['', 'beschikbaar', 'uitgeleend', '3105', 'intern'], v => v === '' ? poolAll.length : poolAll.filter(sc => sc.status === v).length);
     const inList = LATEST_SCREENS;
     const filtered = inList.filter(sc => {
-      const matchesQ = !q || sv(sc.model).includes(q) || sv(sc.locatie).includes(q) || sv(sc.screenID).includes(q) || sv(sc.ops).includes(q);
+      const matchesQ = !q || sv(sc.model).includes(q) || sv(sc.locatie).includes(q) || sv(sc.screenID).includes(q) || sv(sc.ops).includes(q) || accOfScreen(sc.screenID).some(a => sv(a.accessoireID).includes(q));
       const matchesStatus = !statusFilter || sc.status === statusFilter;
       return matchesQ && matchesStatus;
     });
@@ -955,7 +1000,7 @@
           '<div class="mono" title="' + esc(id) + '">' + esc(id) + (RETURNED.has(String(id)) ? ' <span class="newtag">net terug</span>' : '') + '</div>' +
           '<div><span class="status-badge ' + esc(scr.status) + '">' + esc(scr.status) + '</span></div>' +
           '<div style="color:var(--muted);">' + esc(scr.firmwareVersie || '—') + '</div>' +
-          '<div class="mono" title="' + esc(scr.ops || '') + '">' + (scr.ops ? esc(scr.ops) : '<span style="color:var(--muted);font-family:Inter,sans-serif;">—</span>') + '</div>' +
+          accLinesHtml(id, scr.ops) +
           '<div title="' + esc(scr.locatie || '') + '">' + esc(scr.locatie || '—') + '</div>' +
           '<div style="text-align:right;"><button class="toggle-details" data-id="' + esc(id) + '">' + (OPEN_SCREEN_IDS.has(id) ? 'Verberg' : 'Details') + '</button></div>' +
         '</div>' +
@@ -990,7 +1035,7 @@
       '<div class="detail-field"><label>Verantwoordelijke</label><input type="text" id="scver-' + id + '" value="' + esc(scr.verantwoordelijke) + '" placeholder="Niet toegewezen"></div>' +
       '<div class="detail-field"><label>Uitleendatum</label>' + dateInput('scuit-' + id, scr.uitleendatum) + '</div>' +
       '<div class="detail-field"><label>Verwacht terug</label>' + dateInput('scterug-' + id, scr.verwachteTerugkomst) + '</div>' +
-      '<div class="detail-field"><label>OPS (ID in dit scherm)</label><input type="text" id="scops-' + id + '" value="' + esc(scr.ops) + '" placeholder="bv. ednl-ops111B"></div>' +
+      '<div class="detail-field full"><label>Accessoires in dit scherm <span style="text-transform:none;font-weight:400;color:var(--muted);">— koppelen/wijzigen doe je in de tab Accessoires</span></label><div class="static">' + (accOfScreen(id).length ? accOfScreen(id).map(a => esc(a.type) + ' <span class="mono">' + esc(a.accessoireID) + '</span>').join(' &nbsp;·&nbsp; ') : (scr.ops ? 'OPS <span class="mono">' + esc(scr.ops) + '</span>' : '—')) + '</div></div>' +
       '<div class="detail-field"><label>Firmware</label><input type="text" id="scfw-' + id + '" value="' + esc(scr.firmwareVersie) + '"></div>' +
       '<div class="detail-field full"><label>Accessoires</label><input type="text" id="scacc-' + id + '" value="' + esc(scr.accessoires) + '" placeholder="AirServer, camera, ..."></div>' +
       '<div class="detail-field"><label>Staat scherm</label><input type="text" id="scstaat-' + id + '" value="' + esc(scr.staatScherm) + '"></div>' +
@@ -1008,11 +1053,6 @@
     const newId = document.getElementById('scid-' + id).value.trim();
     if (!newId) { toast('Serienummer mag niet leeg zijn'); return; }
     if (newId !== id && LATEST_SCREENS.some(s => String(s.screenID).toLowerCase() === newId.toLowerCase())) { toast('Dit serienummer bestaat al'); return; }
-    const opsVal = document.getElementById('scops-' + id).value.trim();
-    if (opsVal) {
-      const dup = LATEST_SCREENS.find(s => String(s.screenID) !== String(id) && String(s.ops || '').trim().toLowerCase() === opsVal.toLowerCase());
-      if (dup) { toast('OPS ' + opsVal + ' zit al in scherm ' + dup.screenID); return; }
-    }
     btn.disabled = true; btn.textContent = 'Opslaan…';
     const payload = {
       action: 'updateScreen',
@@ -1026,7 +1066,6 @@
       uitleendatum: uit,
       verwachteTerugkomst: terug,
       firmwareVersie: document.getElementById('scfw-' + id).value,
-      ops: opsVal,
       accessoires: document.getElementById('scacc-' + id).value,
       staatScherm: document.getElementById('scstaat-' + id).value,
       notities: document.getElementById('scnot-' + id).value
@@ -1142,7 +1181,7 @@
     addScreenCard.style.display = show ? 'block' : 'none';
     addScreenErr.textContent = '';
     if (show) {
-      ['newScreenID', 'newScreenModel', 'newScreenLocatie', 'newScreenOps'].forEach(id => document.getElementById(id).value = '');
+      ['newScreenID', 'newScreenModel', 'newScreenLocatie'].forEach(id => document.getElementById(id).value = '');
       newScreenStatusSelect.value = 'beschikbaar';
       document.getElementById('newScreenID').focus();
     }
@@ -1175,8 +1214,7 @@
       model: model,
       serienummer: screenID,
       status: status,
-      locatie: locatie,
-      ops: document.getElementById('newScreenOps').value.trim()
+      locatie: locatie
     };
 
     fetch(APPS_SCRIPT_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload) })
@@ -1192,6 +1230,253 @@
       })
       .catch(() => { addScreenErr.textContent = 'Mislukt: kan niet verbinden.'; })
       .finally(() => { addScreenSubmit.disabled = false; addScreenSubmit.textContent = 'Toevoegen'; });
+  });
+
+  // =====================================================================
+  // ACCESSOIRES: AirServer, AirServer Button, OPS (per serienummer)
+  // =====================================================================
+  const ACC_TYPES = ['AirServer', 'AirServer Button', 'OPS'];
+  const ACC_STATUSSEN = ['beschikbaar', 'uitgeleend', 'intern', '3105'];
+  let LATEST_ACC = [];
+  let ACC_LOADED = false;
+  let OPEN_ACC_IDS = new Set();
+  let ACC_SORT = { key: 'type', dir: 1 };
+
+  function accOfScreen(screenId) {
+    return LATEST_ACC.filter(a => a.scherm && String(a.scherm) === String(screenId));
+  }
+  const ACC_SHORT = { 'AirServer': 'AS', 'AirServer Button': 'Btn', 'OPS': 'OPS' };
+  // Compacte regels in de Schermen-lijst: welke accessoires zitten in dit scherm.
+  function accLinesHtml(screenId, legacyOps) {
+    const list = accOfScreen(screenId);
+    let html = '';
+    ACC_TYPES.forEach(t => list.filter(a => a.type === t).forEach(a => {
+      html += '<div title="' + esc(a.type + ' ' + a.accessoireID) + '"><span>' + ACC_SHORT[t] + '</span>' + esc(a.accessoireID) + '</div>';
+    }));
+    if (!html && legacyOps && !ACC_LOADED) html = '<div><span>OPS</span>' + esc(legacyOps) + '</div>';
+    return '<div class="mono acc-lines">' + (html || '<span style="color:var(--muted);font-family:Inter,sans-serif;">—</span>') + '</div>';
+  }
+  function reqScreenAccHtml(screenId) {
+    if (!screenId) return '';
+    const list = accOfScreen(screenId);
+    if (!list.length) return 'Geen accessoires gekoppeld aan dit scherm.';
+    return 'Mee in dit scherm: ' + list.map(a => esc(a.type) + ' ' + esc(a.accessoireID)).join(', ');
+  }
+
+  // Effectieve status van een accessoire: in een scherm (en of dat scherm weg is), of eigen status.
+  function accState(a) {
+    if (a.scherm) {
+      const sc = LATEST_SCREENS.find(s => String(s.screenID) === String(a.scherm));
+      if (sc && sc.status === 'uitgeleend') return { key: 'uitgeleend', text: 'uitgeleend met scherm ' + a.scherm, sub: sc.locatie || '', sortKey: '3' };
+      return { key: 'inscherm', text: 'in scherm ' + a.scherm + (sc ? ' (' + sc.status + ')' : ''), sub: sc ? sc.model : '', sortKey: '2' };
+    }
+    if (a.status === 'beschikbaar') return { key: 'beschikbaar', text: 'beschikbaar', sub: '', sortKey: '1' };
+    if (a.status === 'uitgeleend') return { key: 'uitgeleend', text: 'uitgeleend', sub: a.locatie || '', sortKey: '3' };
+    return { key: a.status || 'overig', text: a.status || '—', sub: a.locatie || '', sortKey: '4' };
+  }
+  function natCmp(a, b) { return String(a).localeCompare(String(b), 'nl', { numeric: true, sensitivity: 'base' }); }
+
+  function loadAccessories() {
+    return fetch(APPS_SCRIPT_URL + '?action=getAccessoires&password=' + encodeURIComponent(PASSWORD))
+      .then(r => r.json())
+      .then(data => {
+        if (!data.ok) {
+          document.getElementById('accRows').innerHTML = '<div class="empty-state">Accessoires zijn nog niet beschikbaar (' + esc(data.error || 'onbekende fout') + '). Is Code.gs bijgewerkt en opnieuw geïmplementeerd?</div>';
+          return;
+        }
+        LATEST_ACC = (data.accessoires || []).map(a => Object.assign({}, a, {
+          accessoireID: String(a.accessoireID == null ? '' : a.accessoireID),
+          scherm: a.scherm == null ? '' : String(a.scherm)
+        }));
+        ACC_LOADED = true;
+        document.getElementById('tabAccCount').textContent = LATEST_ACC.length;
+        fillAccDatalist();
+        renderAccStats();
+        applyAccFilters();
+        // Lijsten die accessoires tonen opnieuw tekenen
+        if (LATEST_SCREENS.length) applyScreenFilters();
+        if (LATEST_REQUESTS.length) applyRequestFilters();
+      })
+      .catch(() => { document.getElementById('accRows').innerHTML = '<div class="empty-state">Kan accessoires niet laden (geen verbinding).</div>'; });
+  }
+  function fillAccDatalist() {
+    let dl = document.getElementById('btnlist');
+    if (!dl) { dl = document.createElement('datalist'); dl.id = 'btnlist'; document.body.appendChild(dl); }
+    dl.innerHTML = LATEST_ACC.filter(a => a.type === 'AirServer Button').map(a => '<option value="' + esc(a.accessoireID) + '"></option>').join('');
+  }
+
+  function renderAccStats() {
+    const box = document.getElementById('accStats');
+    box.innerHTML = ACC_TYPES.map(t => {
+      const l = LATEST_ACC.filter(a => a.type === t);
+      const c = k => l.filter(a => accState(a).key === k).length;
+      const ov = l.length - c('beschikbaar') - c('inscherm') - c('uitgeleend');
+      return '<div class="stat"><div class="lbl">' + esc(t) + '</div><div class="num">' + c('beschikbaar') + '</div><div class="sub">los beschikbaar · in scherm ' + c('inscherm') + ' · uitgeleend ' + c('uitgeleend') + (ov ? ' · overig ' + ov : '') + '</div></div>';
+    }).join('');
+  }
+
+  const accTypeSel = document.getElementById('accTypeFilter');
+  accTypeSel.innerHTML += ACC_TYPES.map(t => '<option value="' + t + '">' + t + '</option>').join('');
+  document.getElementById('newAccType').innerHTML = ACC_TYPES.map(t => '<option value="' + t + '">' + t + '</option>').join('');
+
+  function applyAccFilters() {
+    renderChips('accChips', 'accTypeFilter', [''].concat(ACC_TYPES), v => v === '' ? LATEST_ACC.length : LATEST_ACC.filter(a => a.type === v).length);
+    const q = document.getElementById('accSearch').value.trim().toLowerCase();
+    const tf = accTypeSel.value;
+    let list = LATEST_ACC.filter(a => (!tf || a.type === tf) &&
+      (!q || [a.accessoireID, a.scherm, a.locatie, a.notities, a.type].some(v => sv(v).includes(q))));
+    const d = ACC_SORT.dir;
+    const typeIdx = a => ACC_TYPES.indexOf(a.type);
+    list.sort((a, b) => {
+      let r;
+      if (ACC_SORT.key === 'id') r = natCmp(a.accessoireID, b.accessoireID);
+      else if (ACC_SORT.key === 'where') r = accState(a).sortKey.localeCompare(accState(b).sortKey) || natCmp(a.accessoireID, b.accessoireID);
+      else r = (typeIdx(a) - typeIdx(b)) || natCmp(a.accessoireID, b.accessoireID);
+      return r * d;
+    });
+    document.getElementById('accCount').textContent = list.length + ' van ' + LATEST_ACC.length + ' accessoire' + (LATEST_ACC.length === 1 ? '' : 's');
+    document.querySelectorAll('#accHead .sortable').forEach(h => {
+      h.classList.toggle('active', h.dataset.sort === ACC_SORT.key);
+      const i = h.querySelector('i'); if (i) i.textContent = h.dataset.sort === ACC_SORT.key ? (ACC_SORT.dir > 0 ? '▲' : '▼') : '';
+    });
+    renderAccRows(list);
+  }
+  document.getElementById('accSearch').addEventListener('input', applyAccFilters);
+  accTypeSel.addEventListener('change', applyAccFilters);
+  document.getElementById('accRefresh').addEventListener('click', () => { loadScreens(); loadAccessories(); });
+  document.querySelectorAll('#accHead .sortable').forEach(h => h.addEventListener('click', () => {
+    if (ACC_SORT.key === h.dataset.sort) ACC_SORT.dir *= -1; else ACC_SORT = { key: h.dataset.sort, dir: 1 };
+    applyAccFilters();
+  }));
+
+  function renderAccRows(list) {
+    const container = document.getElementById('accRows');
+    container.innerHTML = '';
+    if (!list.length) {
+      container.innerHTML = '<div class="empty-state">' + (LATEST_ACC.length ? 'Geen accessoires gevonden voor deze zoekopdracht/filter.' : 'Nog geen accessoires. Voeg ze toe met "+ Nieuw accessoire".') + '</div>';
+      return;
+    }
+    list.forEach(a => {
+      const id = a.accessoireID, st = accState(a);
+      const row = document.createElement('div');
+      row.className = 'list-row';
+      const badgeCls = st.key === 'inscherm' ? 'intern' : st.key;
+      row.innerHTML =
+        '<div class="list-row-summary acc-cols">' +
+          '<div>' + esc(a.type) + '</div>' +
+          '<div class="mono" style="font-weight:500;" title="' + esc(id) + '">' + esc(id) + '</div>' +
+          '<div><span class="status-badge ' + esc(badgeCls) + '">' + esc(st.text) + '</span>' + (st.sub ? '<div class="acc-sub">' + esc(st.sub) + '</div>' : '') + '</div>' +
+          '<div class="mono">' + (a.scherm ? esc(a.scherm) : '<span style="color:var(--muted);font-family:Inter,sans-serif;">—</span>') + '</div>' +
+          '<div style="text-align:right;">' + (!a.scherm && a.status === 'uitgeleend' ? '<button class="back-avail" data-id="' + esc(id) + '" style="margin-right:6px;">Terug</button>' : '') + '<button class="toggle-details" data-id="' + esc(id) + '">' + (OPEN_ACC_IDS.has(id) ? 'Verberg' : 'Details') + '</button></div>' +
+        '</div>' +
+        '<div class="detail-row" id="adetail-' + esc(id) + '"></div>';
+      container.appendChild(row);
+      const host = row.querySelector('.detail-row');
+      host.style.display = OPEN_ACC_IDS.has(id) ? 'block' : 'none';
+      if (OPEN_ACC_IDS.has(id)) host.innerHTML = accDetailHtml(a);
+      row.querySelector('button.toggle-details').addEventListener('click', ev => {
+        const open = host.style.display === 'block';
+        host.style.display = open ? 'none' : 'block';
+        if (!open) host.innerHTML = accDetailHtml(a);
+        ev.target.textContent = open ? 'Details' : 'Verberg';
+        if (open) OPEN_ACC_IDS.delete(id); else OPEN_ACC_IDS.add(id);
+        if (!open) bindAccDetail(host, a);
+      });
+      if (OPEN_ACC_IDS.has(id)) bindAccDetail(host, a);
+      const back = row.querySelector('button.back-avail');
+      if (back) back.addEventListener('click', () => accUpdate(id, { status: 'beschikbaar', locatie: '' }, 'Accessoire ' + id + ' staat weer op beschikbaar', back));
+    });
+  }
+
+  function accDetailHtml(a) {
+    const id = a.accessoireID;
+    return '<div class="detail-wrap"><div class="detail-card editable"><div class="detail-grid">' +
+      '<div class="detail-field"><label>Type</label>' + selectHtml('atype-' + id, ACC_TYPES, a.type) + '</div>' +
+      '<div class="detail-field"><label>Serienummer</label><input type="text" id="aid-' + id + '" value="' + esc(id) + '"></div>' +
+      '<div class="detail-field"><label>Gekoppeld aan scherm</label><input type="text" id="ascherm-' + id + '" list="scrlist" value="' + esc(a.scherm) + '" placeholder="leeg = niet in een scherm"></div>' +
+      '<div class="detail-field"><label>Status <span style="text-transform:none;font-weight:400;color:var(--muted);">(alleen als niet in een scherm)</span></label>' + selectHtml('astatus-' + id, ACC_STATUSSEN, a.status || 'beschikbaar') + '</div>' +
+      '<div class="detail-field"><label>Locatie / klant <span style="text-transform:none;font-weight:400;color:var(--muted);">(bij uitgeleend)</span></label><input type="text" id="aloc-' + id + '" value="' + esc(a.locatie) + '"></div>' +
+      '<div class="detail-field full"><label>Notities</label><input type="text" id="anot-' + id + '" value="' + esc(a.notities) + '"></div>' +
+    '</div></div>' +
+    '<div class="detail-actions"><button class="delete delete-acc" data-id="' + esc(id) + '">Verwijderen</button><button class="save save-acc" data-id="' + esc(id) + '">Wijzigingen opslaan</button></div></div>';
+  }
+  function bindAccDetail(host, a) {
+    const id = a.accessoireID;
+    host.querySelector('button.save-acc').addEventListener('click', ev => saveAcc(id, ev.target));
+    host.querySelector('button.delete-acc').addEventListener('click', ev => deleteAcc(id, ev.target));
+  }
+
+  function accUpdate(id, fields, okText, btn) {
+    if (btn) { btn.disabled = true; }
+    return fetch(APPS_SCRIPT_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(Object.assign({ action: 'updateAccessoire', password: PASSWORD, accessoireId: id }, fields)) })
+      .then(r => r.json())
+      .then(data => {
+        toast(data.ok ? okText : 'Mislukt: ' + data.error);
+        if (data.ok) { OPEN_ACC_IDS.delete(id); if (fields.newAccessoireId) OPEN_ACC_IDS.add(fields.newAccessoireId); else if (btn && btn.classList.contains('save-acc')) OPEN_ACC_IDS.add(id); loadScreens(); loadAccessories(); }
+        return data;
+      })
+      .catch(() => toast('Mislukt: kan niet verbinden'))
+      .finally(() => { if (btn) btn.disabled = false; });
+  }
+
+  function saveAcc(id, btn) {
+    const a = LATEST_ACC.find(x => x.accessoireID === id);
+    const g = k => document.getElementById(k + '-' + id).value;
+    const newId = g('aid').trim();
+    if (!newId) { toast('Serienummer mag niet leeg zijn'); return; }
+    if (newId.toLowerCase() !== id.toLowerCase() && LATEST_ACC.some(x => x.accessoireID.toLowerCase() === newId.toLowerCase())) { toast('Dit serienummer bestaat al'); return; }
+    const type = g('atype'), scherm = g('ascherm').trim();
+    if (scherm && !LATEST_SCREENS.some(s => String(s.screenID) === scherm)) { toast('Scherm ' + scherm + ' bestaat niet'); return; }
+    if (scherm) {
+      const other = LATEST_ACC.find(x => x.accessoireID !== id && x.type === type && String(x.scherm) === scherm);
+      if (other && !confirm('Scherm ' + scherm + ' heeft al ' + type + ' ' + other.accessoireID + '.\n\nDie wordt losgemaakt van het scherm (blijft in het register staan). Doorgaan?')) return;
+    }
+    const fields = { type: type, status: g('astatus'), scherm: scherm, locatie: g('aloc'), notities: g('anot') };
+    if (newId !== id) fields.newAccessoireId = newId;
+    accUpdate(id, fields, 'Accessoire bijgewerkt', btn);
+  }
+
+  function deleteAcc(id, btn) {
+    const a = LATEST_ACC.find(x => x.accessoireID === id) || {};
+    if (!confirm((a.type || 'Accessoire') + ' ' + id + ' definitief verwijderen uit het register?' + (a.scherm ? '\n\nHet zit nu in scherm ' + a.scherm + ' en wordt daar ook weggehaald.' : ''))) return;
+    btn.disabled = true;
+    fetch(APPS_SCRIPT_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'deleteAccessoire', password: PASSWORD, accessoireId: id }) })
+      .then(r => r.json())
+      .then(data => { if (data.ok) { toast('Accessoire verwijderd'); OPEN_ACC_IDS.delete(id); loadScreens(); loadAccessories(); } else { toast('Mislukt: ' + data.error); btn.disabled = false; } })
+      .catch(() => { toast('Mislukt: kan niet verbinden'); btn.disabled = false; });
+  }
+
+  // ---- Nieuw accessoire (meerdere serienummers tegelijk mogelijk) ----
+  const addAccCard = document.getElementById('addAccCard');
+  function toggleAddAcc(show) {
+    addAccCard.style.display = show ? 'block' : 'none';
+    document.getElementById('addAccErr').textContent = '';
+    if (show) { ['newAccID', 'newAccScherm', 'newAccNotities'].forEach(i => document.getElementById(i).value = ''); document.getElementById('newAccID').focus(); }
+  }
+  document.getElementById('addAccToggle').addEventListener('click', () => toggleAddAcc(addAccCard.style.display !== 'block'));
+  document.getElementById('addAccCancel').addEventListener('click', () => toggleAddAcc(false));
+  document.getElementById('addAccSubmit').addEventListener('click', () => {
+    const err = document.getElementById('addAccErr'), submit = document.getElementById('addAccSubmit');
+    const type = document.getElementById('newAccType').value;
+    const ids = Array.from(new Set(document.getElementById('newAccID').value.split(/[,;\n]+/).map(s => s.trim()).filter(Boolean)));
+    const scherm = document.getElementById('newAccScherm').value.trim();
+    const notities = document.getElementById('newAccNotities').value.trim();
+    if (!ids.length) { err.textContent = 'Vul minstens één serienummer in.'; return; }
+    if (ids.length > 1 && scherm) { err.textContent = 'Koppelen aan een scherm kan alleen bij één serienummer tegelijk.'; return; }
+    const dup = ids.find(i => LATEST_ACC.some(x => x.accessoireID.toLowerCase() === i.toLowerCase()));
+    if (dup) { err.textContent = 'Serienummer ' + dup + ' bestaat al.'; return; }
+    if (scherm && !LATEST_SCREENS.some(s => String(s.screenID) === scherm)) { err.textContent = 'Scherm ' + scherm + ' bestaat niet.'; return; }
+    if (scherm) {
+      const other = LATEST_ACC.find(x => x.type === type && String(x.scherm) === scherm);
+      if (other && !confirm('Scherm ' + scherm + ' heeft al ' + type + ' ' + other.accessoireID + '. Die wordt losgemaakt. Doorgaan?')) return;
+    }
+    err.textContent = ''; submit.disabled = true; submit.textContent = 'Toevoegen…';
+    let done = 0;
+    ids.reduce((p, id) => p.then(() => fetch(APPS_SCRIPT_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'addAccessoire', password: PASSWORD, accessoireID: id, type: type, status: 'beschikbaar', scherm: scherm, notities: notities }) })
+      .then(r => r.json()).then(d => { if (!d.ok) throw new Error(d.error); done++; })), Promise.resolve())
+      .then(() => { toast(done + ' accessoire' + (done === 1 ? '' : 's') + ' toegevoegd'); toggleAddAcc(false); loadScreens(); loadAccessories(); })
+      .catch(e => { err.textContent = 'Mislukt na ' + done + ' van ' + ids.length + ': ' + (e.message || e); loadAccessories(); })
+      .finally(() => { submit.disabled = false; submit.textContent = 'Toevoegen'; });
   });
 </script>
 
