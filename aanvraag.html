@@ -296,7 +296,8 @@
             <div class="extra-tile" id="pillAir" data-key="airServerNodig"><span data-i18n="airserver">AirServer</span><div class="box"></div></div>
             <div class="extra-tile" id="pillPC" data-key="demoPCNodig"><span data-i18n="demoPC">Demo PC</span><div class="box"></div></div>
             <div class="extra-tile" id="pillNav" data-key="navigatorNodig"><span data-i18n="navigator">Navigator</span><div class="box"></div></div>
-            <div class="extra-tile" id="pillCam" data-key="cameraNodig"><span data-i18n="camera">4K camera</span><div class="box"></div></div>
+            <div class="extra-tile" id="pillCamS" data-key="cameraSpitfire" data-cam="Spitfire"><span data-i18n="camSpitfire">Spitfire camera</span><div class="box"></div></div>
+            <div class="extra-tile" id="pillCamA" data-key="cameraAgora" data-cam="Agora"><span data-i18n="camAgora">Agora camera</span><div class="box"></div></div>
             <div class="extra-tile" id="pillBtn" data-key="airServerButtonNodig"><span data-i18n="airserverButton">AirServer Button</span><div class="box"></div></div>
           </div>
         </div>
@@ -354,7 +355,7 @@
       sectionProduct: 'Demo product required', demoProduct: 'Demo product', chooseProduct: 'Choose a product…',
       mountType: 'Mount / base', chooseMount: 'Choose a mount…',
       mountLabels: { 'Flightcase met EHA-onderstel': 'Flightcase with EHA base', 'In box op pallet': 'In box on pallet' },
-      extras: 'Extras required', airserver: 'AirServer', demoPC: 'Demo PC', navigator: 'Navigator', camera: '4K camera',
+      extras: 'Extras required', airserver: 'AirServer', demoPC: 'Demo PC', navigator: 'Navigator', camera: '4K camera', camSpitfire: 'Spitfire camera', camAgora: 'Agora camera',
       airserverButton: 'AirServer Button', modeScreen: 'Demo screen', modeButton: 'AirServer Button only (no screen)',
       sectionPeriod: 'Period', periodSub: 'Maximum demo period is {weeks} weeks',
       dateArrive: 'Date product must arrive', datePickup: 'Date product must be picked up',
@@ -381,7 +382,7 @@
       sectionProduct: 'Gewenst demo product', demoProduct: 'Demo product', chooseProduct: 'Kies een product…',
       mountType: 'Onderstel', chooseMount: 'Kies een onderstel…',
       mountLabels: { 'Flightcase met EHA-onderstel': 'Flightcase met EHA-onderstel', 'In box op pallet': 'In box op pallet' },
-      extras: 'Extra benodigdheden', airserver: 'AirServer', demoPC: 'Demo PC', navigator: 'Navigator', camera: '4K camera',
+      extras: 'Extra benodigdheden', airserver: 'AirServer', demoPC: 'Demo PC', navigator: 'Navigator', camera: '4K camera', camSpitfire: 'Spitfire-camera', camAgora: 'Agora-camera',
       airserverButton: 'AirServer Button', modeScreen: 'Demoscherm', modeButton: 'Alleen AirServer Button (zonder scherm)',
       sectionPeriod: 'Periode', periodSub: 'Maximale demoperiode is {weeks} weken',
       dateArrive: 'Datum aankomst product', datePickup: 'Datum ophalen product',
@@ -408,7 +409,7 @@
       sectionProduct: 'Gewünschtes Demo-Produkt', demoProduct: 'Demo-Produkt', chooseProduct: 'Produkt auswählen…',
       mountType: 'Halterung / Ständer', chooseMount: 'Halterung auswählen…',
       mountLabels: { 'Flightcase met EHA-onderstel': 'Flightcase mit EHA-Ständer', 'In box op pallet': 'Im Karton auf Palette' },
-      extras: 'Zusätzlich benötigtes Zubehör', airserver: 'AirServer', demoPC: 'Demo-PC', navigator: 'Navigator', camera: '4K-Kamera',
+      extras: 'Zusätzlich benötigtes Zubehör', airserver: 'AirServer', demoPC: 'Demo-PC', navigator: 'Navigator', camera: '4K-Kamera', camSpitfire: 'Spitfire-Kamera', camAgora: 'Agora-Kamera',
       airserverButton: 'AirServer Button', modeScreen: 'Demo-Display', modeButton: 'Nur AirServer Button (ohne Display)',
       sectionPeriod: 'Zeitraum', periodSub: 'Maximale Demodauer: {weeks} Wochen',
       dateArrive: 'Gewünschtes Anlieferdatum', datePickup: 'Gewünschtes Abholdatum',
@@ -435,7 +436,7 @@
       sectionProduct: 'Produit de démonstration souhaité', demoProduct: 'Produit de démo', chooseProduct: 'Choisir un produit…',
       mountType: 'Support / socle', chooseMount: 'Choisir un support…',
       mountLabels: { 'Flightcase met EHA-onderstel': 'Flightcase avec base EHA', 'In box op pallet': 'En boîte sur palette' },
-      extras: 'Accessoires nécessaires', airserver: 'AirServer', demoPC: 'PC de démo', navigator: 'Navigator', camera: 'Caméra 4K',
+      extras: 'Accessoires nécessaires', airserver: 'AirServer', demoPC: 'PC de démo', navigator: 'Navigator', camera: 'Caméra 4K', camSpitfire: 'Caméra Spitfire', camAgora: 'Caméra Agora',
       airserverButton: 'AirServer Button', modeScreen: 'Écran de démo', modeButton: 'AirServer Button seul (sans écran)',
       sectionPeriod: 'Période', periodSub: 'La durée maximale de démonstration est de {weeks} semaines',
       dateArrive: "Date d'arrivée du produit", datePickup: 'Date de reprise du produit',
@@ -537,7 +538,12 @@
 
   // ---------- Extras toggle tiles ----------
   document.querySelectorAll('.extra-tile').forEach(tile => {
-    tile.addEventListener('click', () => tile.classList.toggle('active'));
+    tile.addEventListener('click', () => {
+      const was = tile.classList.contains('active');
+      // Camera: Spitfire of Agora, niet allebei
+      if (tile.dataset.cam) document.querySelectorAll('.extra-tile[data-cam]').forEach(t => t.classList.remove('active'));
+      tile.classList.toggle('active', !was);
+    });
   });
   function extraChecked(id) { return document.getElementById(id).classList.contains('active'); }
 
@@ -658,7 +664,8 @@
       airServerNodig: extraChecked('pillAir'),
       demoPCNodig: extraChecked('pillPC'),
       navigatorNodig: extraChecked('pillNav'),
-      cameraNodig: extraChecked('pillCam'),
+      cameraNodig: extraChecked('pillCamS') || extraChecked('pillCamA'),
+      cameraModel: extraChecked('pillCamS') ? 'Spitfire' : (extraChecked('pillCamA') ? 'Agora' : ''),
       airServerButtonNodig: extraChecked('pillBtn'),
       dateArrive: arriveInput.value,
       datePickup: pickupInput.value,
