@@ -415,7 +415,7 @@
     </div>
 
     <div id="tab-accessoires" style="display:none;">
-      <div class="stats" id="accStats"></div>
+      <div class="stats" id="accStats" style="grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));"></div>
       <div class="toolbar">
         <div class="filters">
           <input type="text" id="accSearch" placeholder="Zoek op serienummer, scherm of locatie…">
@@ -1235,7 +1235,7 @@
   // =====================================================================
   // ACCESSOIRES: AirServer, AirServer Button, OPS (per serienummer)
   // =====================================================================
-  const ACC_TYPES = ['AirServer', 'AirServer Button', 'OPS'];
+  const ACC_TYPES = ['AirServer', 'AirServer Button', 'OPS', 'Camera Spitfire', 'Camera Agora'];
   const ACC_STATUSSEN = ['beschikbaar', 'uitgeleend', 'intern', '3105'];
   let LATEST_ACC = [];
   let ACC_LOADED = false;
@@ -1245,7 +1245,7 @@
   function accOfScreen(screenId) {
     return LATEST_ACC.filter(a => a.scherm && String(a.scherm) === String(screenId));
   }
-  const ACC_SHORT = { 'AirServer': 'AS', 'AirServer Button': 'Btn', 'OPS': 'OPS' };
+  const ACC_SHORT = { 'AirServer': 'AS', 'AirServer Button': 'Btn', 'OPS': 'OPS', 'Camera Spitfire': 'Spitfire', 'Camera Agora': 'Agora' };
   // Compacte regels in de Schermen-lijst: welke accessoires zitten in dit scherm.
   function accLinesHtml(screenId, legacyOps) {
     const list = accOfScreen(screenId);
